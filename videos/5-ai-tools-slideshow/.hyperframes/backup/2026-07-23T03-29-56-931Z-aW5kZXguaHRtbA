@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920">
+    <title>5 AI Tools — AI Club Lombok</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Archivo Black";
+        font-weight: 400;
+        font-style: normal;
+        src: url("assets/fonts/archivo-black-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 400;
+        font-style: normal;
+        src: url("assets/fonts/space-mono-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 700;
+        font-style: normal;
+        src: url("assets/fonts/space-mono-700.woff2") format("woff2");
+      }
+      :root {
+        --bg: #0c1714;
+        --fg: #f4f1e8;
+        --accent: #2fc79f;
+        --muted: #a8b8b0;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); font-family: "Space Mono", monospace; color: var(--fg); }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .clip { position: absolute; inset: 0; overflow: hidden; }
+
+      /* --- slide scaffolding --- */
+      .slide-fill { position: absolute; inset: 0; background: var(--bg); }
+      .bg-wrap { position: absolute; inset: -80px; }
+      .bg-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        filter: blur(9px) saturate(0.75) brightness(0.55);
+        display: block;
+      }
+      .tint { position: absolute; inset: 0; background: #0c1714; opacity: 0.45; }
+      .vignette {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 120% 90% at 50% 42%, transparent 30%, rgba(6, 14, 12, 0.88) 100%);
+      }
+      .grain {
+        position: absolute; inset: 0; opacity: 0.14;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+      }
+
+      .chip {
+        position: absolute; top: 96px; left: 84px;
+        display: inline-flex; align-items: center; gap: 16px;
+        font: 700 26px/1 "Space Mono", monospace;
+        letter-spacing: 0.12em;
+        color: var(--fg);
+        padding: 18px 26px;
+        border: 3px solid var(--accent);
+        border-radius: 999px;
+        background: rgba(12, 23, 20, 0.55);
+      }
+      .chip .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+      .ghost-num {
+        position: absolute; top: 190px; right: 56px;
+        font: 400 440px/0.9 "Archivo Black", sans-serif;
+        color: rgba(47, 199, 159, 0.16);
+        -webkit-text-stroke: 4px rgba(47, 199, 159, 0.78);
+        letter-spacing: -0.04em;
+      }
+
+      .stack {
+        position: absolute; left: 84px; right: 84px; bottom: 430px;
+        display: flex; flex-direction: column; align-items: flex-start; gap: 34px;
+      }
+      .kicker {
+        font: 700 28px/1 "Space Mono", monospace;
+        letter-spacing: 0.28em;
+        color: var(--accent);
+      }
+      .tool-name {
+        font: 400 116px/1.02 "Archivo Black", sans-serif;
+        letter-spacing: -0.03em;
+        color: var(--fg);
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .line-id {
+        font: 400 46px/1.32 "Archivo Black", sans-serif;
+        color: var(--fg);
+        margin: 0;
+        max-width: 880px;
+      }
+      .line-en {
+        font: 400 31px/1.5 "Space Mono", monospace;
+        color: var(--muted);
+        margin: 0;
+        max-width: 860px;
+      }
+      .rule { height: 6px; width: 220px; background: var(--accent); transform-origin: left center; }
+
+      .idx-rail {
+        position: absolute; left: 84px; bottom: 310px;
+        display: flex; gap: 14px;
+      }
+      .idx-rail i { width: 46px; height: 8px; background: rgba(244, 241, 232, 0.22); display: block; }
+      .idx-rail i.on { background: var(--accent); }
+
+      /* --- hook slide --- */
+      #s1-title {
+        font: 400 168px/0.98 "Archivo Black", sans-serif;
+        letter-spacing: -0.035em;
+        margin: 0;
+        color: var(--fg);
+        text-transform: uppercase;
+      }
+      #s1-title .w { display: inline-block; }
+      #s1-title .hl { color: var(--accent); }
+      .underline-swipe { height: 12px; width: 640px; background: var(--accent); transform-origin: left center; }
+
+      /* --- CTA slide --- */
+      #s7-free {
+        font: 400 92px/1.08 "Archivo Black", sans-serif;
+        letter-spacing: -0.03em; margin: 0; text-transform: uppercase;
+        max-width: 900px;
+      }
+      #s7-free em { font-style: normal; color: var(--accent); }
+      .lockup {
+        display: flex; align-items: center; gap: 26px;
+        padding: 30px 40px;
+        border: 4px solid var(--accent);
+        background: rgba(12, 23, 20, 0.72);
+        border-radius: 20px;
+      }
+      .lockup .mark {
+        width: 72px; height: 72px; border-radius: 18px;
+        background: var(--accent);
+        display: grid; place-items: center;
+        font: 400 40px/1 "Archivo Black", sans-serif;
+        color: #0c1714;
+      }
+      .lockup .name { font: 400 54px/1 "Archivo Black", sans-serif; letter-spacing: -0.01em; }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-4rc7" id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="32">
+
+      <!-- ============ S1 · HOOK 0–3.6 ============ -->
+      <section data-hf-id="hf-rot2" id="s1" class="clip" data-start="0" data-duration="3.6" data-track-index="1">
+        <div data-hf-id="hf-9svn" class="slide-fill"></div>
+        <div data-hf-id="hf-tzpj" class="bg-wrap" data-layout-allow-overflow="" id="s1-bg"><img data-hf-id="hf-ynj6" id="s1-img" src="assets/cafe-a.jpg" alt=""></div>
+        <div data-hf-id="hf-tcq7" class="tint"></div><div data-hf-id="hf-q7bi" class="vignette"></div><div data-hf-id="hf-h60x" class="grain"></div>
+        <div data-hf-id="hf-y2md" class="chip" id="s1-chip"><span data-hf-id="hf-9gry" class="dot"></span>AI CLUB LOMBOK</div>
+        <div data-hf-id="hf-fjc2" class="stack" style="bottom: 560px; gap: 40px;">
+          <h1 data-hf-id="hf-f60y" id="s1-title"><span data-hf-id="hf-5ek7" class="w">5</span> <span data-hf-id="hf-5c9u" class="w hl">AI</span> <span data-hf-id="hf-d3pz" class="w hl">TOOLS</span></h1>
+          <div data-hf-id="hf-4124" class="underline-swipe" id="s1-underline"></div>
+          <p data-hf-id="hf-y4ml" class="line-id" id="s1-id">yang bikin freelancer di Lombok naik level 📈</p>
+          <p data-hf-id="hf-wal3" class="line-en" id="s1-en">// 5 AI tools that level up Lombok freelancers</p>
+        </div>
+        <div data-hf-id="hf-yoet" class="idx-rail" id="s1-rail" style="bottom: 460px;">
+          <i data-hf-id="hf-l5u7" class="on"></i><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i><i data-hf-id="hf-ylp6"></i>
+        </div>
+      </section>
+
+      <!-- ============ S2 · CLAUDE 3.6–8.2 ============ -->
+      <section data-hf-id="hf-d5kn" id="s2" class="clip" data-start="3.6" data-duration="4.6" data-track-index="1">
+        <div data-hf-id="hf-jcur" class="slide-fill"></div>
+        <div data-hf-id="hf-ezme" class="bg-wrap" data-layout-allow-overflow="" id="s2-bg"><img data-hf-id="hf-yrp2" id="s2-img" src="assets/cafe-b.jpg" alt=""></div>
+        <div data-hf-id="hf-443z" class="tint"></div><div data-hf-id="hf-8o0i" class="vignette"></div><div data-hf-id="hf-3l5h" class="grain"></div>
+        <div data-hf-id="hf-q9gr" class="chip"><span data-hf-id="hf-zcc2" class="dot"></span>TOOL 01</div>
+        <div data-hf-id="hf-mygn" class="ghost-num" id="s2-num">01</div>
+        <div data-hf-id="hf-ir9y" class="stack" id="s2-stack">
+          <span data-hf-id="hf-zpnq" class="kicker">BUAT PROPOSAL &amp; EMAIL</span>
+          <h2 data-hf-id="hf-fuel" class="tool-name">Claude</h2>
+          <div data-hf-id="hf-xtm6" class="rule" id="s2-rule"></div>
+          <p data-hf-id="hf-5sxv" class="line-id">Proposal klien beres dalam 2 menit</p>
+          <p data-hf-id="hf-7i75" class="line-en">// client proposals &amp; replies, done in minutes</p>
+        </div>
+        <div data-hf-id="hf-1vzy" class="idx-rail"><i data-hf-id="hf-j2zz" class="on"></i><i data-hf-id="hf-0l8b"></i><i data-hf-id="hf-0zjc"></i><i data-hf-id="hf-zsm9"></i><i data-hf-id="hf-06xa"></i></div>
+      </section>
+
+      <!-- ============ S3 · CANVA 8.2–12.8 ============ -->
+      <section data-hf-id="hf-wmar" id="s3" class="clip" data-start="8.2" data-duration="4.6" data-track-index="1">
+        <div data-hf-id="hf-iyjq" class="slide-fill"></div>
+        <div data-hf-id="hf-8kl1" class="bg-wrap" data-layout-allow-overflow="" id="s3-bg"><img data-hf-id="hf-kkpc" id="s3-img" src="assets/cafe-a.jpg" alt=""></div>
+        <div data-hf-id="hf-3psy" class="tint"></div><div data-hf-id="hf-92bj" class="vignette"></div><div data-hf-id="hf-4s2k" class="grain"></div>
+        <div data-hf-id="hf-pv5q" class="chip"><span data-hf-id="hf-zqn3" class="dot"></span>TOOL 02</div>
+        <div data-hf-id="hf-qo4f" class="ghost-num" id="s3-num">02</div>
+        <div data-hf-id="hf-pbib" class="stack" id="s3-stack">
+          <span data-hf-id="hf-tdxv" class="kicker">DESAIN TANPA DESIGNER</span>
+          <h2 data-hf-id="hf-wf4d" class="tool-name">Canva Magic</h2>
+          <div data-hf-id="hf-qkwl" class="rule" id="s3-rule"></div>
+          <p data-hf-id="hf-ubf1" class="line-id">Feed IG jadi pro — tanpa designer</p>
+          <p data-hf-id="hf-6ypf" class="line-en">// pro-level design, zero design skills</p>
+        </div>
+        <div data-hf-id="hf-nsiq" class="idx-rail"><i data-hf-id="hf-iooy" class="on"></i><i data-hf-id="hf-iadx" class="on"></i><i data-hf-id="hf-26gf"></i><i data-hf-id="hf-2krg"></i><i data-hf-id="hf-oz7w"></i></div>
+      </section>
+
+      <!-- ============ S4 · CAPCUT 12.8–17.4 ============ -->
+      <section data-hf-id="hf-m6tx" id="s4" class="clip" data-start="12.8" data-duration="4.6" data-track-index="1">
+        <div data-hf-id="hf-ik8p" class="slide-fill"></div>
+        <div data-hf-id="hf-yn58" class="bg-wrap" data-layout-allow-overflow="" id="s4-bg"><img data-hf-id="hf-g6r4" id="s4-img" src="assets/cafe-b.jpg" alt=""></div>
+        <div data-hf-id="hf-3bhx" class="tint"></div><div data-hf-id="hf-9gmk" class="vignette"></div><div data-hf-id="hf-4drj" class="grain"></div>
+        <div data-hf-id="hf-pgup" class="chip"><span data-hf-id="hf-04y4" class="dot"></span>TOOL 03</div>
+        <div data-hf-id="hf-jnyn" class="ghost-num" id="s4-num">03</div>
+        <div data-hf-id="hf-9ck0" class="stack" id="s4-stack">
+          <span data-hf-id="hf-ulu1" class="kicker">EDIT VIDEO</span>
+          <h2 data-hf-id="hf-rrl7" class="tool-name">CapCut AI</h2>
+          <div data-hf-id="hf-eln4" class="rule" id="s4-rule"></div>
+          <p data-hf-id="hf-h0bk" class="line-id">Edit video 10× lebih cepat — auto caption</p>
+          <p data-hf-id="hf-fkn1" class="line-en">// edit reels 10× faster, captions for free</p>
+        </div>
+        <div data-hf-id="hf-o6tr" class="idx-rail"><i data-hf-id="hf-l2j4" class="on"></i><i data-hf-id="hf-ko83" class="on"></i><i data-hf-id="hf-k9x2" class="on"></i><i data-hf-id="hf-okwv"></i><i data-hf-id="hf-o6lu"></i></div>
+      </section>
+
+      <!-- ============ S5 · GAMMA 17.4–22.0 ============ -->
+      <section data-hf-id="hf-z8z7" id="s5" class="clip" data-start="17.4" data-duration="4.6" data-track-index="1">
+        <div data-hf-id="hf-i5xo" class="slide-fill"></div>
+        <div data-hf-id="hf-6h2r" class="bg-wrap" data-layout-allow-overflow="" id="s5-bg"><img data-hf-id="hf-wohq" id="s5-img" src="assets/cafe-a.jpg" alt=""></div>
+        <div data-hf-id="hf-63n4" class="tint"></div><div data-hf-id="hf-9uxl" class="vignette"></div><div data-hf-id="hf-5kom" class="grain"></div>
+        <div data-hf-id="hf-p2jo" class="chip"><span data-hf-id="hf-0j95" class="dot"></span>TOOL 04</div>
+        <div data-hf-id="hf-gvnr" class="ghost-num" id="s5-num">04</div>
+        <div data-hf-id="hf-3oot" class="stack" id="s5-stack">
+          <span data-hf-id="hf-a3g3" class="kicker">PRESENTASI INSTAN</span>
+          <h2 data-hf-id="hf-fhc4" class="tool-name">Gamma</h2>
+          <div data-hf-id="hf-mvwv" class="rule" id="s5-rule"></div>
+          <p data-hf-id="hf-a88v" class="line-id">Pitch deck instan buat client meeting</p>
+          <p data-hf-id="hf-c66y" class="line-en">// a full deck from one prompt</p>
+        </div>
+        <div data-hf-id="hf-ol4s" class="idx-rail"><i data-hf-id="hf-jvm1" class="on"></i><i data-hf-id="hf-gaus" class="on"></i><i data-hf-id="hf-fwjr" class="on"></i><i data-hf-id="hf-mi31" class="on"></i><i data-hf-id="hf-jqbp"></i></div>
+      </section>
+
+      <!-- ============ S6 · NOTEBOOKLM 22.0–26.6 ============ -->
+      <section data-hf-id="hf-gpfq" id="s6" class="clip" data-start="22" data-duration="4.6" data-track-index="1">
+        <div data-hf-id="hf-hrmn" class="slide-fill"></div>
+        <div data-hf-id="hf-5gwy" class="bg-wrap" data-layout-allow-overflow="" id="s6-bg"><img data-hf-id="hf-6ehe" id="s6-img" src="assets/cafe-b.jpg" alt=""></div>
+        <div data-hf-id="hf-5pc3" class="tint"></div><div data-hf-id="hf-a98m" class="vignette"></div><div data-hf-id="hf-56dl" class="grain"></div>
+        <div data-hf-id="hf-oo8n" class="chip"><span data-hf-id="hf-0xk6" class="dot"></span>TOOL 05</div>
+        <div data-hf-id="hf-5klj" class="ghost-num" id="s6-num">05</div>
+        <div data-hf-id="hf-pb3e" class="stack" id="s6-stack">
+          <span data-hf-id="hf-wirw" class="kicker">BELAJAR SKILL BARU</span>
+          <h2 data-hf-id="hf-a1ql" class="tool-name">NotebookLM</h2>
+          <div data-hf-id="hf-g5yy" class="rule" id="s6-rule"></div>
+          <p data-hf-id="hf-gfk4" class="line-id">Mentor gratis 24/7 — belajar dari PDF &amp; video</p>
+          <p data-hf-id="hf-ubxz" class="line-en">// your free study mentor, any document</p>
+        </div>
+        <div data-hf-id="hf-ozft" class="idx-rail"><i data-hf-id="hf-mwe2" class="on"></i><i data-hf-id="hf-nap3" class="on"></i><i data-hf-id="hf-np04" class="on"></i><i data-hf-id="hf-o3b5" class="on"></i><i data-hf-id="hf-ohm6" class="on"></i></div>
+      </section>
+
+      <!-- ============ S7 · CTA 26.6–32.0 ============ -->
+      <section data-hf-id="hf-lm6a" id="s7" class="clip" data-start="26.6" data-duration="5.4" data-track-index="1">
+        <div data-hf-id="hf-hdbm" class="slide-fill"></div>
+        <div data-hf-id="hf-w94x" class="bg-wrap" data-layout-allow-overflow="" id="s7-bg"><img data-hf-id="hf-6olv" id="s7-img" src="assets/meetup.jpg" alt=""></div>
+        <div data-hf-id="hf-ejzt" class="tint" style="opacity: 0.6;"></div><div data-hf-id="hf-anjn" class="vignette"></div><div data-hf-id="hf-6dao" class="grain"></div>
+        <div data-hf-id="hf-efq3" class="chip" id="s7-chip"><span data-hf-id="hf-1bv7" class="dot"></span>KOMUNITAS · LOMBOK</div>
+        <div data-hf-id="hf-bnh1" class="stack" style="bottom: 400px; gap: 44px;">
+          <h2 data-hf-id="hf-lts0" id="s7-free">Semua ini kita bahas <em data-hf-id="hf-m72v">GRATIS</em> 🌴</h2>
+          <div data-hf-id="hf-pbo9" class="lockup" id="s7-lockup">
+            <div data-hf-id="hf-w5dx" class="mark">AI</div>
+            <div data-hf-id="hf-18mr" class="name">AI CLUB LOMBOK</div>
+          </div>
+          <p data-hf-id="hf-0g92" class="line-en" id="s7-join">// Join grup WhatsApp — link di bio. We break these down live at the next meetup.</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const EASE_IN = "power3.out";
+
+      // ---- S1 · hook (kinetic-type: per-word stagger + underline draw) ----
+      tl.fromTo("#s1-bg", { scale: 1.06, xPercent: -2 }, { scale: 1.14, xPercent: 2, duration: 3.6, ease: "none" }, 0);
+      tl.from("#s1-chip", { y: -40, opacity: 0, duration: 0.5, ease: EASE_IN }, 0.15);
+      tl.from("#s1-title .w", { yPercent: 110, opacity: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.14 }, 0.35);
+      tl.fromTo("#s1-underline", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power4.out" }, 1.05);
+      tl.from("#s1-id", { y: 46, opacity: 0, duration: 0.55, ease: EASE_IN }, 1.25);
+      tl.from("#s1-en", { opacity: 0, duration: 0.45, ease: "none" }, 1.65);
+      tl.from("#s1-rail i", { opacity: 0, x: -18, duration: 0.3, ease: EASE_IN, stagger: 0.06 }, 1.8);
+
+      // ---- S2–S6 · tool cards (titlecard-reveal card chain; hard-cut seams) ----
+      const slides = [
+        { id: "s2", start: 3.6, dir: 1 },
+        { id: "s3", start: 8.2, dir: -1 },
+        { id: "s4", start: 12.8, dir: 1 },
+        { id: "s5", start: 17.4, dir: -1 },
+        { id: "s6", start: 22.0, dir: 1 },
+      ];
+      slides.forEach(({ id, start, dir }) => {
+        // micro-drift on the backdrop (multi-phase-camera, micro register)
+        tl.fromTo(`#${id}-bg`,
+          { scale: 1.06, xPercent: 2.4 * dir },
+          { scale: 1.14, xPercent: -2.4 * dir, duration: 4.6, ease: "none" }, start);
+        // ghost number: soft spring settle (spring-pop-entrance, single beat)
+        tl.from(`#${id}-num`, { scale: 0.82, opacity: 0, duration: 0.65, ease: "back.out(1.4)" }, start + 0.1);
+        // the ONE restrained move: stack rises together, then holds
+        tl.from(`#${id}-stack > *`, { y: 54, opacity: 0, duration: 0.6, ease: EASE_IN, stagger: 0.09 }, start + 0.25);
+        tl.fromTo(`#${id}-rule`, { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power4.out" }, start + 0.6);
+      });
+
+      // ---- S7 · CTA (kinetic-type CTA: value line → lockup spring-pop → long hold) ----
+      tl.fromTo("#s7-bg", { scale: 1.16 }, { scale: 1.06, duration: 5.4, ease: "none" }, 26.6);
+      tl.from("#s7-chip", { y: -40, opacity: 0, duration: 0.5, ease: EASE_IN }, 26.75);
+      tl.from("#s7-free", { y: 60, opacity: 0, duration: 0.6, ease: EASE_IN }, 26.95);
+      tl.from("#s7-lockup", { scale: 0.7, opacity: 0, duration: 0.7, ease: "back.out(1.8)" }, 27.55);
+      tl.from("#s7-join", { opacity: 0, y: 26, duration: 0.5, ease: EASE_IN }, 28.15);
+      // subtle breathing on the held lockup (sine-wave-loop, finite repeats)
+      tl.to("#s7-lockup", { scale: 1.02, duration: 0.9, ease: "sine.inOut", repeat: 3, yoyo: true }, 28.4);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #0c2527;
+          color: #f6efdf;
+          font-family: "Archivo Black", sans-serif;
+          overflow: hidden;
+        }
+        .c-glow {
+          position: absolute;
+          left: 50%;
+          top: 46%;
+          width: 1400px;
+          height: 1400px;
+          margin: -700px 0 0 -700px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(214, 68, 30, 0.5) 0%, rgba(214, 68, 30, 0) 62%);
+          opacity: 0;
+          z-index: 1;
+        }
+        .c-ghost {
+          position: absolute;
+          bottom: 240px;
+          left: -40px;
+          font-size: 300px;
+          letter-spacing: -0.04em;
+          color: #f6efdf;
+          opacity: 0.06;
+          white-space: nowrap;
+          z-index: 1;
+        }
+        .c-hairline {
+          position: absolute;
+          left: 80px;
+          right: 80px;
+          height: 2px;
+          background: rgba(134, 199, 176, 0.32);
+          transform-origin: left center;
+          z-index: 2;
+        }
+        #c-line-a {
+          top: 330px;
+        }
+        #c-line-b {
+          bottom: 460px;
+        }
+        .c-stage {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 0 80px 200px 80px;
+          z-index: 3;
+        }
+        .c-beat {
+          font-size: 96px;
+          line-height: 1.04;
+          letter-spacing: -0.03em;
+          opacity: 0;
+          will-change: transform;
+        }
+        .c-lockup {
+          margin-top: 64px;
+          opacity: 0;
+          will-change: transform;
+          transform-origin: 0% 50%;
+        }
+        .c-lockup-top {
+          font-size: 92px;
+          line-height: 1;
+          letter-spacing: -0.02em;
+        }
+        .c-lockup-main {
+          font-size: 158px;
+          line-height: 1;
+          letter-spacing: -0.03em;
+          color: #ff6a45;
+        }
+        .c-pill {
+          display: inline-block;
+          align-self: flex-start;
+          margin-top: 56px;
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 34px;
+          letter-spacing: 0.08em;
+          color: #0c2527;
+          background: #ff6a45;
+          border-radius: 999px;
+          padding: 26px 44px;
+          opacity: 0;
+          will-change: transform;
+        }
+        .c-foot {
+          position: absolute;
+          left: 80px;
+          bottom: 500px;
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 26px;
+          letter-spacing: 0.14em;
+          color: rgba(134, 199, 176, 0.85);
+          opacity: 0;
+          z-index: 3;
+        }
+      </style>
+
+      <div data-hf-id="hf-t9cn" id="root" data-composition-id="cta" data-width="1080" data-height="1920" data-duration="6">
+        <div data-hf-id="hf-1roj" class="c-glow" id="c-glow" data-layout-allow-overflow=""></div>
+        <div data-hf-id="hf-fhoy" class="c-ghost" id="c-ghost" data-layout-allow-overflow="">MEETUPS</div>
+        <div data-hf-id="hf-ebqc" class="c-hairline" id="c-line-a"></div>
+        <div data-hf-id="hf-p77z" class="c-hairline" id="c-line-b"></div>
+
+        <div data-hf-id="hf-643a" class="c-stage">
+          <div data-hf-id="hf-91xa" class="c-beat" id="c-b1">LEARN THESE</div>
+          <div data-hf-id="hf-6yn4" class="c-beat" id="c-b2">HANDS-ON.</div>
+          <div data-hf-id="hf-5r7m" class="c-lockup" id="c-lockup">
+            <div data-hf-id="hf-cfoe" class="c-lockup-top">AI CLUB</div>
+            <div data-hf-id="hf-p06w" class="c-lockup-main">LOMBOK</div>
+          </div>
+          <div data-hf-id="hf-zf9v" class="c-pill" id="c-pill">FREE MEETUPS · LINK IN BIO</div>
+        </div>
+
+        <div data-hf-id="hf-tvg5" class="c-foot" id="c-foot">// BRING A LAPTOP. SANDALS WELCOME.</div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const DUR = 6;
+
+          // One tempo grid drives the whole card.
+          const PULSE = 0.35;
+          const BEATS = [PULSE * 1, PULSE * 3, PULSE * 6, PULSE * 8.5];
+
+          // Backdrop.
+          tl.fromTo(
+            "#c-glow",
+            { opacity: 0, scale: 0.85 },
+            { opacity: 0.3, scale: 1, duration: 1.1, ease: "power2.out" },
+            0.1,
+          );
+          tl.fromTo("#c-line-a", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.15);
+          tl.fromTo("#c-line-b", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.3);
+          tl.fromTo("#c-ghost", { x: 0 }, { x: -60, duration: DUR, ease: "none" }, 0);
+
+          // Beat 1: scale-blur slam.
+          tl.fromTo(
+            "#c-b1",
+            { opacity: 0, scale: 1.45, filter: "blur(14px)" },
+            { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "power4.out" },
+            BEATS[0],
+          );
+          // Beat 2: side snap.
+          tl.fromTo(
+            "#c-b2",
+            { opacity: 0, x: -300 },
+            { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" },
+            BEATS[1],
+          );
+          // Lockup: confident smooth pop, anchored left.
+          tl.fromTo(
+            "#c-lockup",
+            { opacity: 0, scale: 0.6, y: 30 },
+            { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "power3.out" },
+            BEATS[2],
+          );
+          // Pill: the one action — playful pop.
+          tl.fromTo(
+            "#c-pill",
+            { opacity: 0, scale: 0 },
+            { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.5)" },
+            BEATS[3],
+          );
+          // Footer whisper.
+          tl.fromTo(
+            "#c-foot",
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" },
+            BEATS[3] + 0.4,
+          );
+
+          // Hold: bounded glow breathe, settled by the final frame.
+          const phase = { p: 0 };
+          const IDLE_START = BEATS[3] + 0.7;
+          const IDLE_DUR = DUR - IDLE_START;
+          tl.to(
+            phase,
+            {
+              p: Math.PI * 2,
+              duration: IDLE_DUR,
+              ease: "none",
+              onUpdate: function () {
+                const el = document.getElementById("c-glow");
+                if (!el) return;
+                const prog = phase.p / (Math.PI * 2);
+                const env = prog < 0.8 ? 1 : (1 - prog) / 0.2;
+                const s = Math.sin(phase.p);
+                el.style.opacity = String(0.3 + s * 0.04 * env);
+              },
+            },
+            IDLE_START,
+          );
+
+          window.__timelines["cta"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

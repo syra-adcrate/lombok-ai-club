@@ -1,0 +1,27 @@
+{
+  "name": "aimeetup-dashboard",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-23",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*", "/uploads/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "aimeetup-dashboard",
+      "database_id": "906b5d19-4ac8-46e6-a734-8a8f3014a1fb"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "MEDIA",
+      "id": "06aa138660aa47fa968a7562976dab41"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

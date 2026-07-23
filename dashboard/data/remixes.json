@@ -1,0 +1,75 @@
+[
+  {
+    "id": "62a6dc746051b58a",
+    "outlierId": "reddit-t3_1upgc8g",
+    "assetIds": [],
+    "title": "Remix: running-away escape story (49.8K upvotes) -> learn AI then surf",
+    "hook": "I was told leaving the city meant my skills would rot on a beach.",
+    "plan": "See REMIXES/batch-03-outlier-remixes.md Remix 5. IG EN (trim to 4 lines for X). Surf 7am -> builders room 4pm story, Bali-has-100-rooms contrast. CTA: RSVP link in bio.",
+    "status": "idea",
+    "createdAt": "2026-07-23T03:25:07.678Z"
+  },
+  {
+    "id": "c0506aebeebeb1d4",
+    "outlierId": "linkedin-7485805189027962880",
+    "assetIds": [],
+    "title": "Remix: Four Horsemen of corporate AI anxiety -> Lombok business owners",
+    "hook": "Every business owner I talk to in Lombok has the same four AI worries. Almost none say them out loud.",
+    "plan": "See REMIXES/batch-03-outlier-remixes.md Remix 4. LinkedIn EN, personal account. 4 quoted worries, Senggigi hotel-manager treadmill line, ask which one, venue/sponsor offer in comments.",
+    "status": "idea",
+    "createdAt": "2026-07-23T03:25:07.668Z"
+  },
+  {
+    "id": "350420eef196a3bb",
+    "outlierId": "tiktok-7647302714682248469",
+    "assetIds": [],
+    "title": "Remix: less-is-more AI stack (samdespo) -> kamu gak butuh 20 AI tools",
+    "hook": "Kamu gak butuh 20 AI tools. Dua aja.",
+    "plan": "See REMIXES/batch-03-outlier-remixes.md Remix 3. TikTok ID-first -> IG Reel. Beats: doomscroll of 27-TOOLS feeds / the real stack: 1 chatbot mastered + 1 job-specific tool / rest is noise. CTA: bingung milih? meetup, link bio.",
+    "status": "idea",
+    "createdAt": "2026-07-23T03:25:07.656Z"
+  },
+  {
+    "id": "e868ccef3f9e482b",
+    "outlierId": "tiktok-7665094057923759382",
+    "assetIds": [],
+    "title": "Remix: train Claude to write like a human (12.4K saves) -> AI-ism carousel",
+    "hook": "Tulisan AI kamu ketahuan. Ini cara benerinnya",
+    "plan": "See REMIXES/batch-03-outlier-remixes.md Remix 2. IG carousel Hack List: 4 AI-isms before/after, slide 6 = Wikipedia signs-of-AI-writing prompt trick. CTA: praktik bareng di meetup, link bio.\n\nVIDEO: videos/ai-writing-fix-slideshow (32s 9:16 HyperFrames slideshow, checks passed) \u2014 preview: cd videos/ai-writing-fix-slideshow && npm run dev; render: npm run render.",
+    "status": "filming",
+    "createdAt": "2026-07-23T03:25:07.645Z"
+  },
+  {
+    "id": "e47f8198bb0bdd74",
+    "outlierId": "tiktok-7665383515592101143",
+    "assetIds": [],
+    "title": "Remix: OpenAI sandbox-escape news (62.8x) -> plain-language news-jack reel",
+    "hook": "AI-nya kabur beneran \u2014 dan bobol perusahaan lain.",
+    "plan": "See REMIXES/batch-03-outlier-remixes.md Remix 1. IG Reel ID-first, repost TikTok. Beats: what happened in 30s no-jargon / sandbox analogy (anak main di pagar, pagarnya dipanjat) / why it matters here. CTA: bahas bareng di meetup, link bio.",
+    "status": "filming",
+    "createdAt": "2026-07-23T03:25:07.631Z"
+  },
+  {
+    "id": "2e1a0ce2d1051d3a",
+    "outlierId": "tiktok-7646676174059392286",
+    "assetIds": [
+      "0b6d0e522a5d02db",
+      "6412108e0863d996"
+    ],
+    "title": "Remix: 'Best AI tools 2026' (670x) -> 5 AI tools for Lombok freelancers",
+    "hook": "5 AI tools yang bikin freelancer di Lombok naik level \ud83d\udcc8\ud83c\udf34",
+    "plan": "FORMAT (from the 670x outlier): rapid-fire listicle, one tool per beat, screen recording + text overlay, no talking head needed.\n\nHOOK (0-2s): text overlay over beachside-cafe laptop shot (see reference images):\n\"5 AI tools yang bikin freelancer di Lombok naik level \ud83d\udcc8\ud83c\udf34\"\n\nBEAT 1 (2-10s) - Claude: screen rec drafting a client proposal. Overlay: \"Proposal klien dalam 2 menit\"\nBEAT 2 (10-18s) - Canva Magic Studio: design tanpa designer. Overlay: \"Feed IG jadi pro\"\nBEAT 3 (18-26s) - CapCut AI: auto-captions buat Reels. Overlay: \"Edit video 10x lebih cepat\"\nBEAT 4 (26-34s) - Gamma: pitch deck instan. Overlay: \"Deck buat client meeting\"\nBEAT 5 (34-42s) - NotebookLM: belajar skill baru dari PDF/video. Overlay: \"Mentor gratis 24/7\"\n\nCTA (42-50s): crowd/venue shot (use our own footage once we have it):\n\"Semua tools ini kita bahas GRATIS di AI Club Lombok. Join grup WhatsApp - link di bio \ud83c\udf34 / We break these down live at our next meetup.\"\n\nSHOT NOTES: warm tropical-cafe grade like the two Pinterest refs; phone-vertical 9:16; trending audio low, overlay text carries the info (most watch muted).",
+    "status": "idea",
+    "createdAt": "2026-07-23T03:07:37.784Z"
+  },
+  {
+    "id": "60165b466361471e",
+    "outlierId": "instagram-3947283674388138563",
+    "assetIds": [],
+    "title": "Remix: Sydney\u2019s skyline is changing. So is the future of AI governa",
+    "hook": "",
+    "plan": "",
+    "status": "idea",
+    "createdAt": "2026-07-23T03:04:34.825Z"
+  }
+]

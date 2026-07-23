@@ -1,0 +1,18 @@
+# OS / editor noise
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Local Claude Code settings (machine-specific permissions)
+.claude/settings.local.json
+
+# Backups & generated thumbnails
+*.bak
+.thumbnails/
+
+# Raw third-party scrape dumps (regenerate via scripts/outlier-pipeline/README.md)
+scripts/outlier-pipeline/raw/
+
+# Personal media library (imported reference images are not licensed for redistribution)
+dashboard/uploads/

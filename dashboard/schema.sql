@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS collections (
+  name TEXT PRIMARY KEY,
+  data TEXT NOT NULL
+);

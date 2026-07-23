@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #0c2527;
+          color: #f6efdf;
+          font-family: "Archivo Black", sans-serif;
+          overflow: hidden;
+        }
+        .hk-glow {
+          position: absolute;
+          left: -420px;
+          bottom: -380px;
+          width: 1200px;
+          height: 1200px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(214, 68, 30, 0.55) 0%, rgba(214, 68, 30, 0) 65%);
+          opacity: 0;
+          z-index: 1;
+        }
+        .hk-ghost {
+          position: absolute;
+          top: 120px;
+          left: -60px;
+          font-size: 340px;
+          letter-spacing: -0.04em;
+          color: #f6efdf;
+          opacity: 0.07;
+          white-space: nowrap;
+          z-index: 1;
+        }
+        .hk-hairline {
+          position: absolute;
+          left: 80px;
+          right: 80px;
+          height: 2px;
+          background: rgba(134, 199, 176, 0.35);
+          transform-origin: left center;
+          z-index: 2;
+        }
+        #hk-line-a {
+          top: 356px;
+        }
+        #hk-line-b {
+          bottom: 470px;
+        }
+        .hk-stage {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 0 80px 200px 80px;
+          z-index: 3;
+        }
+        .hk-kicker {
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 30px;
+          letter-spacing: 0.14em;
+          color: #86c7b0;
+          margin-bottom: 44px;
+          opacity: 0;
+        }
+        .hk-line {
+          font-size: 104px;
+          line-height: 1.02;
+          letter-spacing: -0.03em;
+          opacity: 0;
+          will-change: transform;
+        }
+        .hk-num {
+          color: #ff6a45;
+        }
+        .hk-slam {
+          font-size: 168px;
+          line-height: 1;
+          color: #ff6a45;
+          letter-spacing: -0.03em;
+          margin-top: 12px;
+          opacity: 0;
+          will-change: transform;
+        }
+        .mh-wrap {
+          position: relative;
+          display: inline;
+        }
+        .mh-bar {
+          position: absolute;
+          inset: 6px -8px -2px -8px;
+          background: #ff6a45;
+          opacity: 0.32;
+          transform: scaleX(0);
+          transform-origin: left center;
+          border-radius: 6px;
+          z-index: 0;
+        }
+        .mh-text {
+          position: relative;
+          z-index: 1;
+        }
+      </style>
+
+      <div data-hf-id="hf-m1sn" id="root" data-composition-id="hook" data-width="1080" data-height="1920" data-duration="4.5">
+        <div data-hf-id="hf-0fwr" class="hk-glow" id="hk-glow" data-layout-allow-overflow=""></div>
+        <div data-hf-id="hf-ifoz" class="hk-ghost" id="hk-ghost" data-layout-allow-overflow="">LOMBOK</div>
+        <div data-hf-id="hf-010s" class="hk-hairline" id="hk-line-a"></div>
+        <div data-hf-id="hf-awif" class="hk-hairline" id="hk-line-b"></div>
+
+        <div data-hf-id="hf-3pnm" class="hk-stage" id="hk-stage">
+          <div data-hf-id="hf-w0rn" class="hk-kicker" id="hk-kicker">// FOR FREELANCERS &amp; NOMADS</div>
+          <div data-hf-id="hf-ev60" class="hk-line" id="hk-l1"><span data-hf-id="hf-loy6" class="hk-num">3</span> AI TOOLS</div>
+          <div data-hf-id="hf-j586" class="hk-line" id="hk-l2">
+            THAT
+            <span data-hf-id="hf-4utj" class="mh-wrap"><span data-hf-id="hf-7lbf" class="mh-bar" id="hk-mark"></span><span data-hf-id="hf-kr4k" class="mh-text">PAY</span></span>
+            FOR
+          </div>
+          <div data-hf-id="hf-rzxl" class="hk-line" id="hk-l3">YOUR NEXT</div>
+          <div data-hf-id="hf-qqvl" class="hk-line" id="hk-l4">MONTH IN</div>
+          <div data-hf-id="hf-kngy" class="hk-slam" id="hk-l5">LOMBOK</div>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const F = 1 / 30;
+          const DUR = 4.5;
+
+          // Backdrop: glow blooms in, hairlines draw, ghost drifts across the whole scene.
+          tl.fromTo(
+            "#hk-glow",
+            { opacity: 0, scale: 0.85 },
+            { opacity: 0.3, scale: 1, duration: 1.0, ease: "power2.out" },
+            0.1,
+          );
+          tl.fromTo(
+            "#hk-line-a",
+            { scaleX: 0 },
+            { scaleX: 1, duration: 0.7, ease: "power3.out" },
+            0.2,
+          );
+          tl.fromTo(
+            "#hk-line-b",
+            { scaleX: 0 },
+            { scaleX: 1, duration: 0.7, ease: "power3.out" },
+            0.35,
+          );
+          tl.fromTo("#hk-ghost", { x: 0 }, { x: -70, duration: DUR, ease: "none" }, 0);
+
+          // Kicker sets the stage early.
+          tl.fromTo(
+            "#hk-kicker",
+            { opacity: 0, y: 24 },
+            { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" },
+            0.15,
+          );
+
+          // Waterfall entry: binary reveal + whip from below, gaps shrinking.
+          let t = 0.5;
+          tl.set("#hk-l1", { opacity: 1, y: 76 }, t);
+          tl.to("#hk-l1", { y: 0, duration: 0.18, ease: "power4.out" }, t);
+          t = t + 0.18 + 2 * F;
+          tl.set("#hk-l2", { opacity: 1, y: 50 }, t);
+          tl.to("#hk-l2", { y: 0, duration: 0.15, ease: "power4.out" }, t);
+          t = t + 0.15 - F;
+          tl.set("#hk-l3", { opacity: 1, y: 44 }, t);
+          tl.to("#hk-l3", { y: 0, duration: 0.14, ease: "power4.out" }, t);
+          t = t + 0.14 - F;
+          tl.set("#hk-l4", { opacity: 1, y: 42 }, t);
+          tl.to("#hk-l4", { y: 0, duration: 0.13, ease: "power4.out" }, t);
+
+          // LOMBOK slams on its own beat.
+          tl.fromTo(
+            "#hk-l5",
+            { opacity: 0, scale: 1.5, filter: "blur(16px)" },
+            { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "power4.out" },
+            1.65,
+          );
+
+          // Marker sweep under PAY after the slam settles.
+          tl.to("#hk-mark", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 2.3);
+
+          // Hold: bounded glow breathe + hairline pulse, settling before the cut.
+          const glow = null;
+          const phase = { p: 0 };
+          const IDLE_START = 2.4;
+          const IDLE_DUR = DUR - IDLE_START;
+          const CYCLES = 1;
+          tl.to(
+            phase,
+            {
+              p: Math.PI * 2 * CYCLES,
+              duration: IDLE_DUR,
+              ease: "none",
+              onUpdate: function () {
+                const el = document.getElementById("hk-glow");
+                if (!el) return;
+                const prog = phase.p / (Math.PI * 2 * CYCLES);
+                const env = prog < 0.8 ? 1 : (1 - prog) / 0.2;
+                const s = Math.sin(phase.p);
+                el.style.opacity = String(0.3 + s * 0.04 * env);
+              },
+            },
+            IDLE_START,
+          );
+
+          window.__timelines["hook"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

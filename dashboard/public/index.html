@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Club Lombok — Content Studio</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b23;
+    --panel-2: #1d242f;
+    --border: #2a3341;
+    --text: #e8edf4;
+    --muted: #8a96a8;
+    --accent: #35c2a0;
+    --accent-2: #f2b64c;
+    --danger: #e0604f;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 28px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: .2px; }
+  header h1 span { color: var(--accent); }
+  nav { display: flex; gap: 6px; margin-left: 24px; }
+  nav button {
+    background: none; border: 1px solid transparent; color: var(--muted);
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; cursor: pointer; font-weight: 600;
+  }
+  nav button.active { background: var(--panel-2); color: var(--text); border-color: var(--border); }
+  nav button:hover { color: var(--text); }
+  main { max-width: 1200px; margin: 0 auto; padding: 28px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Dropzone */
+  #dropzone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 42px 20px; text-align: center; color: var(--muted);
+    cursor: pointer; transition: all .15s; margin-bottom: 24px; background: var(--panel);
+  }
+  #dropzone.dragover { border-color: var(--accent); color: var(--accent); background: rgba(53,194,160,.06); }
+  #dropzone strong { color: var(--text); display: block; font-size: 16px; margin-bottom: 6px; }
+  #dropzone.dragover strong { color: var(--accent); }
+
+  .import-bar { display: flex; gap: 10px; margin: -10px 0 24px; }
+  .import-bar input {
+    flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 13.5px; padding: 11px 14px; font-family: inherit;
+  }
+  .import-bar input:focus { outline: none; border-color: var(--accent); }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .chip {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    padding: 5px 12px; border-radius: 999px; font-size: 12.5px; cursor: pointer; font-weight: 600;
+  }
+  .chip.on { background: rgba(53,194,160,.15); border-color: var(--accent); color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card .media { position: relative; aspect-ratio: 4/3; background: #000; }
+  .card .media img, .card .media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge {
+    position: absolute; top: 8px; left: 8px; font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px; background: rgba(0,0,0,.65); color: #fff; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .badge.video { background: rgba(242,182,76,.9); color: #1a1206; }
+  .card .body { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card .name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tagrow { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(53,194,160,.12); color: var(--accent); border: 1px solid rgba(53,194,160,.3); font-weight: 600;
+  }
+  .card textarea, .card input[type=text] {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 12.5px; padding: 7px 9px; width: 100%; resize: vertical; font-family: inherit;
+  }
+  .card .row { display: flex; gap: 6px; align-items: center; }
+  .btn {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #06231b; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.small { padding: 4px 10px; font-size: 12px; }
+  .btn.danger { color: var(--danger); }
+  .muted { color: var(--muted); font-size: 13px; }
+
+  /* Outliers */
+  .outlier {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr auto; gap: 14px;
+  }
+  .outlier .platform {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    padding: 3px 9px; border-radius: 6px; margin-right: 8px;
+  }
+  .p-tiktok { background: #2a1a2e; color: #f2ffe9; border: 1px solid #69485f; }
+  .p-instagram { background: #33202e; color: #ff9fbf; border: 1px solid #6b3a55; }
+  .p-reddit { background: #33231a; color: #ffab7a; border: 1px solid #6b4630; }
+  .p-linkedin { background: #1a2733; color: #7ab8ff; border: 1px solid #30516b; }
+  .outlier h3 { font-size: 15px; margin: 8px 0 6px; line-height: 1.4; }
+  .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .stat { font-size: 12.5px; color: var(--muted); }
+  .stat b { color: var(--text); font-size: 14px; display: block; }
+  .oscore { text-align: center; min-width: 90px; }
+  .oscore .num { font-size: 26px; font-weight: 800; color: var(--accent-2); }
+  .oscore .lbl { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .stars { display: flex; gap: 2px; margin-top: 8px; justify-content: center; }
+  .stars span { cursor: pointer; font-size: 17px; color: #3a4557; }
+  .stars span.on { color: var(--accent-2); }
+  select {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 8px; font-size: 13px;
+  }
+  .empty {
+    border: 1px dashed var(--border); border-radius: var(--radius); padding: 40px;
+    text-align: center; color: var(--muted); font-size: 14px; line-height: 1.7;
+  }
+  .empty code { background: var(--panel-2); padding: 2px 7px; border-radius: 6px; font-size: 12.5px; }
+
+  /* Remix builder */
+  .remix-form { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 26px; }
+  .remix-form .field { margin-bottom: 14px; }
+  .remix-form label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px; }
+  .remix-form input[type=text], .remix-form textarea, .remix-form select {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 14px; padding: 10px 12px; font-family: inherit;
+  }
+  .picker { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+  .picker .pick {
+    flex: 0 0 90px; height: 68px; border-radius: 8px; overflow: hidden; cursor: pointer;
+    border: 2px solid transparent; position: relative; background: #000;
+  }
+  .picker .pick img, .picker .pick video { width: 100%; height: 100%; object-fit: cover; }
+  .picker .pick.on { border-color: var(--accent); }
+  .picker .pick.on::after {
+    content: "✓"; position: absolute; top: 3px; right: 5px; color: var(--accent);
+    font-weight: 800; text-shadow: 0 0 4px #000;
+  }
+  .remix-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .remix-card h3 { font-size: 15px; margin-bottom: 6px; }
+  .remix-card .thumbs { display: flex; gap: 6px; margin-top: 10px; }
+  .remix-card .thumbs .t { width: 56px; height: 42px; border-radius: 6px; overflow: hidden; background: #000; }
+  .remix-card .thumbs .t img, .remix-card .thumbs .t video { width: 100%; height: 100%; object-fit: cover; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .5px; }
+  .s-idea { background: rgba(138,150,168,.15); color: var(--muted); }
+  .s-scripting { background: rgba(242,182,76,.15); color: var(--accent-2); }
+  .s-filming { background: rgba(122,184,255,.15); color: #7ab8ff; }
+  .s-posted { background: rgba(53,194,160,.15); color: var(--accent); }
+  /* Outlier detail modal */
+  #modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 40;
+    display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto;
+  }
+  #modal-backdrop.open { display: flex; }
+  #modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    max-width: 680px; width: 100%; padding: 24px;
+  }
+  #modal .close { float: right; }
+  #modal h3 { font-size: 17px; line-height: 1.45; margin: 10px 0 4px; }
+  #modal .section { margin-top: 18px; }
+  #modal .section .lbl {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
+  }
+  #modal .script {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap;
+  }
+  #modal textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 13.5px; padding: 10px 12px; font-family: inherit; resize: vertical;
+  }
+  .outlier .openable { cursor: pointer; }
+  .outlier .openable:hover h3 { color: var(--accent); }
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #06231b; font-weight: 700; font-size: 13.5px;
+    padding: 10px 20px; border-radius: 999px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 50;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Calendar */
+  .cal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .cal-head h2 { margin: 0; flex: 1; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 18px; }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  }
+  .cal-dow {
+    font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .8px; padding: 4px 8px;
+  }
+  .cal-cell {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    min-height: 108px; padding: 6px; display: flex; flex-direction: column; gap: 4px;
+    cursor: pointer; transition: border-color .12s;
+  }
+  .cal-cell:hover { border-color: var(--muted); }
+  .cal-cell.blank { background: none; border-color: transparent; cursor: default; }
+  .cal-cell.today { border-color: var(--accent); }
+  .cal-cell .d { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .cal-cell.today .d { color: var(--accent); }
+  .cal-cell.past:not(.today) { opacity: .55; }
+  .cal-post {
+    font-size: 11.5px; font-weight: 600; line-height: 1.3; padding: 4px 6px; border-radius: 6px;
+    background: var(--panel-2); border: 1px solid var(--border); border-left: 3px solid var(--muted);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;
+  }
+  .cal-post:hover { filter: brightness(1.2); }
+  .cal-post.sent { opacity: .6; text-decoration: line-through; }
+  .cal-post.draft { border-style: dashed; }
+  .cal-post .t { color: var(--muted); font-weight: 700; margin-right: 4px; font-size: 10.5px; }
+  .ch-instagram { border-left-color: #e1559b; }
+  .ch-tiktok { border-left-color: #62e6e0; }
+  .ch-facebook { border-left-color: #4c8ef2; }
+  .ch-linkedin { border-left-color: #7ab8ff; }
+  .ch-x { border-left-color: #c7d0dc; }
+  .ch-youtube { border-left-color: #e0604f; }
+  .ch-threads { border-left-color: #b39ddb; }
+  .ch-chip { display: inline-flex; align-items: center; gap: 5px; }
+  .ch-chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .cal-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; font-size: 12px; color: var(--muted); align-items: center; }
+  .cal-legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+  .buffer-note {
+    margin-top: 16px; font-size: 12.5px; color: var(--muted); line-height: 1.6;
+    background: var(--panel); border: 1px dashed var(--border); border-radius: 10px; padding: 10px 14px;
+  }
+  .chset { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lib-h { margin: 22px 0 10px; }
+  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .lib-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .lib-card .thumb { width: 100%; height: 170px; object-fit: cover; object-position: top; display: block; background: #0a0f0d; }
+  .lib-card .thumb.empty { display: grid; place-items: center; color: var(--muted); font-size: 32px; }
+  .lib-card .body { padding: 12px 14px; }
+  .lib-card h4 { margin: 0 0 6px; font-size: 15px; }
+  .lib-card .msg { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0 0 8px; }
+  .lib-badges { display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px; }
+  .lib-badges span { border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+  .lib-badges span.ok { border-color: var(--accent); color: var(--accent); }
+  .lib-batch { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .lib-batch:hover { border-color: var(--accent); }
+  .lib-batch .cnt { margin-left: auto; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  #modal pre.batch-md { white-space: pre-wrap; font-size: 12.5px; line-height: 1.6; max-height: 65vh; overflow: auto; }
+  .lib-card .thumb.expandable { cursor: zoom-in; }
+  .sv-stage { display: flex; align-items: center; gap: 12px; justify-content: center; }
+  .sv-stage img { max-height: 58vh; max-width: 70%; border-radius: 10px; border: 1px solid var(--border); }
+  .sv-strip { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .sv-strip img { height: 84px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; opacity: 0.6; }
+  .sv-strip img.cur { border-color: var(--accent); opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌴 AI Club Lombok — <span>Content Studio</span></h1>
+  <nav>
+    <button data-tab="calendar" class="active">Calendar</button>
+    <button data-tab="outliers">Outliers</button>
+    <button data-tab="assets">My Photos &amp; Videos</button>
+    <button data-tab="remixes">Remix Briefs</button>
+    <button data-tab="library">Library</button>
+  </nav>
+</header>
+<main>
+
+  <!-- CALENDAR -->
+  <section id="tab-calendar" class="tab active">
+    <div class="cal-head">
+      <h2 id="cal-title">Month</h2>
+      <div class="chset" id="cal-channel-filters"></div>
+      <button class="btn small" id="cal-prev">←</button>
+      <button class="btn small" id="cal-today">Today</button>
+      <button class="btn small" id="cal-next">→</button>
+      <button class="btn primary" id="cal-new">+ Schedule post</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend" id="cal-legend"></div>
+    <div class="buffer-note" id="buffer-note">
+      🗓️ Posts synced from <b>Buffer</b> show up here automatically (marked ⚡). Ask Claude to “sync the calendar from Buffer”
+      — it pulls your queue for all connected socials into <code>data/schedule.json</code>. You can also add drafts by hand: click any day.
+    </div>
+  </section>
+
+  <!-- OUTLIERS -->
+  <section id="tab-outliers" class="tab">
+    <div class="toolbar">
+      <h2 style="margin:0;flex:1">Outlier content to remix</h2>
+      <select id="outlier-icp-filter">
+        <option value="yes" selected>✅ ICP fit only</option>
+        <option value="format">🪝 Format-only (steal the hook)</option>
+        <option value="no">Off-ICP</option>
+        <option value="">Everything</option>
+      </select>
+      <select id="outlier-filter">
+        <option value="">All platforms</option>
+        <option value="tiktok">TikTok</option>
+        <option value="instagram">Instagram</option>
+        <option value="reddit">Reddit</option>
+        <option value="linkedin">LinkedIn</option>
+      </select>
+      <select id="outlier-status-filter">
+        <option value="">All statuses</option>
+        <option value="new">New</option>
+        <option value="shortlist">Shortlisted</option>
+        <option value="skip">Skipped</option>
+      </select>
+    </div>
+    <div id="outlier-list"></div>
+  </section>
+
+  <!-- ASSETS -->
+  <section id="tab-assets" class="tab">
+    <div id="dropzone">
+      <strong>Drop your photos &amp; videos here</strong>
+      or click to browse — event recaps, venue shots, crowd moments, speaker clips
+      <input type="file" id="file-input" multiple accept="image/*,video/*" hidden>
+    </div>
+    <div class="import-bar">
+      <input type="text" id="import-url" placeholder="…or paste a Pinterest pin URL (or any direct image / video URL) to import as reference">
+      <button class="btn primary" id="import-btn">Import</button>
+    </div>
+    <div class="toolbar">
+      <span class="muted">Filter by tag:</span>
+      <div id="tag-filters" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div class="grid" id="asset-grid"></div>
+  </section>
+
+  <!-- REMIXES -->
+  <section id="tab-remixes" class="tab">
+    <div class="remix-form">
+      <h2>New remix brief</h2>
+      <div class="field">
+        <label>Outlier to recreate</label>
+        <select id="rx-outlier"><option value="">— pick an outlier —</option></select>
+      </div>
+      <div class="field">
+        <label>Your reference photos / videos</label>
+        <div class="picker" id="rx-picker"></div>
+      </div>
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="rx-title" placeholder="e.g. Remix: '60-second chatbot' hook with our workshop footage">
+      </div>
+      <div class="field">
+        <label>Hook (first 2 seconds / first line)</label>
+        <input type="text" id="rx-hook" placeholder="e.g. 'Bikin chatbot pertamamu dalam 60 detik — di Lombok 🌴'">
+      </div>
+      <div class="field">
+        <label>Shot plan / notes</label>
+        <textarea id="rx-plan" rows="3" placeholder="Which of your clips map to which beats of the original? What do you change for AI Club Lombok?"></textarea>
+      </div>
+      <button class="btn primary" id="rx-save">Save brief</button>
+    </div>
+    <h2>Briefs</h2>
+    <div id="remix-list"></div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="tab-library" class="tab">
+    <h2>Created content</h2>
+    <p class="muted" style="margin-top:-6px">Everything already produced for the campaign — video projects from <code>videos/</code> and shipped copy batches from <code>REMIXES/</code>.</p>
+    <h3 class="lib-h">🎬 Video projects</h3>
+    <div class="lib-grid" id="lib-videos"></div>
+    <h3 class="lib-h">✍️ Remix copy batches</h3>
+    <div id="lib-batches"></div>
+  </section>
+</main>
+<div id="modal-backdrop">
+  <div id="modal"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const SUGGESTED_TAGS = ['event-recap','venue','crowd','speaker','workshop','surf-island','food','behind-scenes'];
+let assets = [], outliers = [], remixes = [];
+let pickedAssets = new Set();
+let activeTagFilter = null;
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ---- Tabs ----
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  $('#tab-' + b.dataset.tab).classList.add('active');
+}));
+
+// ---- Upload ----
+const dz = $('#dropzone'), fi = $('#file-input');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  uploadFiles(e.dataTransfer.files);
+});
+fi.addEventListener('change', () => uploadFiles(fi.files));
+
+// ---- Import from URL (Pinterest etc.) ----
+async function importUrl() {
+  const input = $('#import-url');
+  const url = input.value.trim();
+  if (!url) return;
+  const btn = $('#import-btn');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  try {
+    const res = await fetch('/api/import-url', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error || 'Import failed'); return; }
+    input.value = '';
+    await loadAssets();
+    toast(`Imported ${data.type} ✓`);
+  } catch {
+    toast('Import failed — check the URL');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Import';
+  }
+}
+$('#import-btn').addEventListener('click', importUrl);
+$('#import-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') importUrl(); });
+
+async function uploadFiles(fileList) {
+  const files = [...fileList].filter(f => /^(image|video)\//.test(f.type));
+  if (!files.length) return toast('Only photos and videos are supported');
+  const fd = new FormData();
+  files.forEach(f => fd.append('files', f));
+  toast(`Uploading ${files.length} file${files.length > 1 ? 's' : ''}…`);
+  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+  if (!res.ok) return toast('Upload failed');
+  await loadAssets();
+  toast(`Added ${files.length} file${files.length > 1 ? 's' : ''} ✓`);
+  fi.value = '';
+}
+
+// ---- Assets ----
+async function loadAssets() {
+  assets = await (await fetch('/api/assets')).json();
+  renderAssets();
+  renderPicker();
+  renderTagFilters();
+}
+
+function renderTagFilters() {
+  const inUse = [...new Set(assets.flatMap(a => a.tags))];
+  $('#tag-filters').innerHTML = inUse.map(t =>
+    `<span class="chip ${activeTagFilter === t ? 'on' : ''}" data-t="${esc(t)}">${esc(t)}</span>`).join('') || '<span class="muted">no tags yet</span>';
+  document.querySelectorAll('#tag-filters .chip').forEach(c => c.addEventListener('click', () => {
+    activeTagFilter = activeTagFilter === c.dataset.t ? null : c.dataset.t;
+    renderAssets(); renderTagFilters();
+  }));
+}
+
+function mediaEl(a, muted = true) {
+  return a.type === 'video'
+    ? `<video src="${esc(a.url)}" ${muted ? 'muted' : 'controls'} preload="metadata"></video>`
+    : `<img src="${esc(a.url)}" loading="lazy" alt="">`;
+}
+
+function renderAssets() {
+  const list = activeTagFilter ? assets.filter(a => a.tags.includes(activeTagFilter)) : assets;
+  $('#asset-grid').innerHTML = list.map(a => `
+    <div class="card" data-id="${a.id}">
+      <div class="media">
+        ${a.type === 'video' ? `<video src="${esc(a.url)}" controls preload="metadata"></video>` : `<img src="${esc(a.url)}" loading="lazy" alt="">`}
+        <span class="badge ${a.type === 'video' ? 'video' : ''}">${a.type}</span>
+      </div>
+      <div class="body">
+        <div class="name" title="${esc(a.originalName)}">${esc(a.originalName)}</div>
+        ${a.sourceUrl ? `<a href="${esc(a.sourceUrl)}" target="_blank" class="muted" style="font-size:11.5px;color:var(--accent);text-decoration:none">source ↗</a>` : ''}
+        <div class="tagrow">${a.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="row">
+          <input type="text" class="tag-input" placeholder="add tag + Enter" list="tag-suggestions">
+        </div>
+        <textarea class="notes-input" rows="2" placeholder="notes (what's in this clip?)">${esc(a.notes)}</textarea>
+        <div class="row" style="justify-content:space-between">
+          <span class="muted" style="font-size:11.5px">${(a.size / 1024 / 1024).toFixed(1)} MB</span>
+          <button class="btn small danger del-btn">Delete</button>
+        </div>
+      </div>
+    </div>`).join('') || '<div class="empty" style="grid-column:1/-1">No media yet — drop your event photos and videos above 👆</div>';
+
+  document.querySelectorAll('#asset-grid .card').forEach(card => {
+    const id = card.dataset.id;
+    card.querySelector('.tag-input').addEventListener('keydown', async (e) => {
+      if (e.key !== 'Enter' || !e.target.value.trim()) return;
+      const a = assets.find(x => x.id === id);
+      const tag = e.target.value.trim().toLowerCase().replace(/\s+/g, '-');
+      if (!a.tags.includes(tag)) {
+        await fetch('/api/assets/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ tags: [...a.tags, tag] }) });
+        await loadAssets();
+      }
+    });
+    card.querySelector('.notes-input').addEventListener('change', async (e) => {
+      await fetch('/api/assets/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ notes: e.target.value }) });
+      const a = assets.find(x => x.id === id); if (a) a.notes = e.target.value;
+    });
+    card.querySelector('.del-btn').addEventListener('click', async () => {
+      if (!confirm('Delete this file?')) return;
+      await fetch('/api/assets/' + id, { method: 'DELETE' });
+      await loadAssets();
+    });
+  });
+}
+
+// ---- Outliers ----
+async function loadOutliers() {
+  outliers = await (await fetch('/api/outliers')).json();
+  renderOutliers();
+  renderOutlierSelect();
+}
+
+function fmt(n) {
+  if (n == null) return '–';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(n);
+}
+
+const SEG_LABELS = { local: '🏝️ locals', nomad: '💻 nomads', business: '🏪 business' };
+function icpBadges(o) {
+  if ((o.icpFit || 'no') === 'yes') {
+    return (o.icpSegments || []).map(s => `<span class="pill s-posted" style="margin-left:6px">${SEG_LABELS[s] || esc(s)}</span>`).join('');
+  }
+  if (o.icpFit === 'format') return '<span class="pill s-scripting" style="margin-left:6px">🪝 format</span>';
+  return '<span class="pill s-idea" style="margin-left:6px">off-icp</span>';
+}
+
+function renderOutliers() {
+  const pf = $('#outlier-filter').value, sf = $('#outlier-status-filter').value, icp = $('#outlier-icp-filter').value;
+  let list = outliers.filter(o =>
+    (!pf || o.platform === pf) &&
+    (!sf || (o.status || 'new') === sf) &&
+    (!icp || (o.icpFit || 'no') === icp));
+  list.sort((a, b) => (b.outlierScore || 0) - (a.outlierScore || 0));
+  if (!list.length) {
+    $('#outlier-list').innerHTML = outliers.length
+      ? `<div class="empty">Nothing matches these filters — switch the ICP filter to "Everything" to see all ${outliers.length} outliers.</div>`
+      : `<div class="empty">
+      No outliers loaded yet.<br>
+      The scraping session writes results to <code>dashboard/data/outliers.json</code> — once it finishes, refresh this page and they'll appear here, ranked by outlier score.
+    </div>`;
+    return;
+  }
+  $('#outlier-list').innerHTML = list.map(o => `
+    <div class="outlier" data-id="${o.id}">
+      <div class="openable" title="Open details — script & source">
+        <span class="platform p-${esc(o.platform)}">${esc(o.platform)}</span>
+        <span class="muted">${esc(o.author || '')}</span>
+        ${o.sample ? '<span class="pill s-idea" style="margin-left:8px">sample</span>' : ''}
+        ${icpBadges(o)}
+        <h3>${esc(o.title || o.caption || '(no caption)')} <span class="muted" style="font-size:12px;font-weight:400">— open ↗</span></h3>
+        ${o.whyOutlier ? `<div class="muted" style="font-size:13px;line-height:1.5">${esc(o.whyOutlier)}</div>` : ''}
+        <div class="stats">
+          <div class="stat"><b>${fmt(o.views)}</b>views</div>
+          <div class="stat"><b>${fmt(o.likes)}</b>likes</div>
+          <div class="stat"><b>${fmt(o.comments)}</b>comments</div>
+          <div class="stat"><b>${fmt(o.shares)}</b>shares</div>
+          ${o.url ? `<div class="stat"><a href="${esc(o.url)}" target="_blank" style="color:var(--accent)">open original ↗</a></div>` : ''}
+        </div>
+      </div>
+      <div class="oscore">
+        <div class="num">${o.outlierScore != null ? Number(o.outlierScore).toFixed(1) : '–'}×</div>
+        <div class="lbl">outlier score</div>
+        <div class="stars">${[1,2,3,4,5].map(i => `<span data-v="${i}" class="${(o.myScore || 0) >= i ? 'on' : ''}">★</span>`).join('')}</div>
+        <div style="margin-top:8px">
+          <select class="status-sel">
+            ${['new','shortlist','skip'].map(s => `<option value="${s}" ${(o.status || 'new') === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>`).join('');
+
+  document.querySelectorAll('.outlier').forEach(el => {
+    const id = el.dataset.id;
+    el.querySelectorAll('.stars span').forEach(s => s.addEventListener('click', async () => {
+      await fetch('/api/outliers/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ myScore: Number(s.dataset.v) }) });
+      await loadOutliers();
+    }));
+    el.querySelector('.status-sel').addEventListener('change', async (e) => {
+      await fetch('/api/outliers/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: e.target.value }) });
+      await loadOutliers();
+    });
+    el.querySelector('.openable').addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      openOutlier(id);
+    });
+  });
+}
+
+// ---- Outlier detail modal ----
+const backdrop = $('#modal-backdrop');
+
+function openOutlier(id) {
+  const o = outliers.find(x => x.id === id);
+  if (!o) return;
+  const sourceHost = o.url ? (() => { try { return new URL(o.url).hostname; } catch { return o.url; } })() : null;
+  $('#modal').innerHTML = `
+    <button class="btn small close" id="modal-close">✕ close</button>
+    <span class="platform p-${esc(o.platform)}">${esc(o.platform)}</span>
+    ${o.sample ? '<span class="pill s-idea" style="margin-left:6px">sample</span>' : ''}
+    <h3>${esc(o.title || o.caption || '(no caption)')}</h3>
+
+    <div class="section">
+      <div class="lbl">Source</div>
+      <div style="font-size:13.5px;line-height:1.7">
+        ${o.author ? `Creator: <b>${esc(o.author)}</b><br>` : ''}
+        ${o.url
+          ? `Original post: <a href="${esc(o.url)}" target="_blank" style="color:var(--accent)">${esc(sourceHost)} ↗</a>`
+          : '<span class="muted">No source link available for this item.</span>'}
+        ${o.postedAt ? `<br>Posted: ${esc(o.postedAt)}` : ''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="lbl">ICP fit</div>
+      <div style="font-size:13.5px;line-height:1.6">${icpBadges(o)}
+        ${o.icpReason ? `<div class="muted" style="margin-top:6px;font-size:13px">${esc(o.icpReason)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="lbl">Performance</div>
+      <div class="stats">
+        <div class="stat"><b>${fmt(o.views)}</b>views</div>
+        <div class="stat"><b>${fmt(o.likes)}</b>likes</div>
+        <div class="stat"><b>${fmt(o.comments)}</b>comments</div>
+        <div class="stat"><b>${fmt(o.shares)}</b>shares</div>
+        <div class="stat"><b>${o.outlierScore != null ? Number(o.outlierScore).toFixed(1) + '×' : '–'}</b>outlier score</div>
+      </div>
+      ${o.whyOutlier ? `<div class="muted" style="margin-top:8px;font-size:13px;line-height:1.6">${esc(o.whyOutlier)}</div>` : ''}
+    </div>
+
+    <div class="section">
+      <div class="lbl">Script / transcript</div>
+      ${o.script
+        ? `<div class="script">${esc(o.script)}</div>`
+        : `<div class="script muted">No transcript captured yet — the scrape session can fill the <code>script</code> field, or paste it below in your notes.</div>`}
+    </div>
+
+    <div class="section">
+      <div class="lbl">My notes</div>
+      <textarea id="modal-notes" rows="3" placeholder="Your remix angle, hook ideas, what to keep / change…">${esc(o.myNotes || '')}</textarea>
+    </div>
+
+    <div class="section" style="display:flex;gap:10px">
+      <button class="btn primary" id="modal-remix">Create remix brief from this →</button>
+    </div>`;
+  backdrop.classList.add('open');
+
+  $('#modal-close').addEventListener('click', closeModal);
+  $('#modal-notes').addEventListener('change', async (e) => {
+    await fetch('/api/outliers/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ myNotes: e.target.value }) });
+    o.myNotes = e.target.value;
+  });
+  $('#modal-remix').addEventListener('click', () => {
+    closeModal();
+    document.querySelector('nav button[data-tab="remixes"]').click();
+    $('#rx-outlier').value = id;
+    $('#rx-title').value = `Remix: ${(o.title || o.caption || '').slice(0, 60)}`;
+    $('#rx-title').focus();
+  });
+}
+
+function closeModal() { backdrop.classList.remove('open'); }
+backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+$('#outlier-filter').addEventListener('change', renderOutliers);
+$('#outlier-status-filter').addEventListener('change', renderOutliers);
+$('#outlier-icp-filter').addEventListener('change', renderOutliers);
+
+// ---- Remix briefs ----
+function renderOutlierSelect() {
+  const sel = $('#rx-outlier');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— pick an outlier —</option>' +
+    outliers.map(o => `<option value="${o.id}">[${esc(o.platform)}] ${esc((o.title || o.caption || '').slice(0, 70))}</option>`).join('');
+  sel.value = cur;
+}
+
+function renderPicker() {
+  $('#rx-picker').innerHTML = assets.map(a => `
+    <div class="pick ${pickedAssets.has(a.id) ? 'on' : ''}" data-id="${a.id}" title="${esc(a.originalName)}">
+      ${mediaEl(a)}
+    </div>`).join('') || '<span class="muted">Upload media in the “My Photos &amp; Videos” tab first.</span>';
+  document.querySelectorAll('#rx-picker .pick').forEach(p => p.addEventListener('click', () => {
+    const id = p.dataset.id;
+    pickedAssets.has(id) ? pickedAssets.delete(id) : pickedAssets.add(id);
+    p.classList.toggle('on');
+  }));
+}
+
+$('#rx-save').addEventListener('click', async () => {
+  const title = $('#rx-title').value.trim();
+  if (!title) return toast('Give the brief a title');
+  await fetch('/api/remixes', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      title,
+      outlierId: $('#rx-outlier').value || null,
+      assetIds: [...pickedAssets],
+      hook: $('#rx-hook').value.trim(),
+      plan: $('#rx-plan').value.trim(),
+    }),
+  });
+  $('#rx-title').value = ''; $('#rx-hook').value = ''; $('#rx-plan').value = '';
+  pickedAssets.clear();
+  renderPicker();
+  await loadRemixes();
+  toast('Brief saved ✓');
+});
+
+async function loadRemixes() {
+  remixes = await (await fetch('/api/remixes')).json();
+  renderRemixes();
+}
+
+function renderRemixes() {
+  $('#remix-list').innerHTML = remixes.map(r => {
+    const o = outliers.find(x => x.id === r.outlierId);
+    const refs = r.assetIds.map(id => assets.find(a => a.id === id)).filter(Boolean);
+    return `
+    <div class="remix-card" data-id="${r.id}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3>${esc(r.title)}</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="rx-status">
+            ${['idea','scripting','filming','posted'].map(s => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn small danger rx-del">✕</button>
+        </div>
+      </div>
+      ${o ? `<div class="muted" style="margin-top:4px">Recreating: <span class="platform p-${esc(o.platform)}" style="font-size:10px">${esc(o.platform)}</span> ${esc((o.title || o.caption || '').slice(0, 90))}</div>` : ''}
+      ${r.hook ? `<div style="margin-top:8px;font-size:13.5px">🪝 <em>${esc(r.hook)}</em></div>` : ''}
+      ${r.plan ? `<div class="muted" style="margin-top:6px;font-size:13px;white-space:pre-wrap">${esc(r.plan)}</div>` : ''}
+      ${refs.length ? `<div class="thumbs">${refs.map(a => `<div class="t">${mediaEl(a)}</div>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty">No briefs yet — pick an outlier, select your reference footage, save the plan.</div>';
+
+  document.querySelectorAll('.remix-card').forEach(el => {
+    const id = el.dataset.id;
+    el.querySelector('.rx-status').addEventListener('change', async (e) => {
+      await fetch('/api/remixes/' + id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: e.target.value }) });
+      await loadRemixes();
+    });
+    el.querySelector('.rx-del').addEventListener('click', async () => {
+      if (!confirm('Delete this brief?')) return;
+      await fetch('/api/remixes/' + id, { method: 'DELETE' });
+      await loadRemixes();
+    });
+  });
+}
+
+// ---- Calendar ----
+const CHANNELS = {
+  instagram: { label: 'Instagram', color: '#e1559b' },
+  tiktok:    { label: 'TikTok',    color: '#62e6e0' },
+  facebook:  { label: 'Facebook',  color: '#4c8ef2' },
+  linkedin:  { label: 'LinkedIn',  color: '#7ab8ff' },
+  x:         { label: 'X',         color: '#c7d0dc' },
+  youtube:   { label: 'YouTube',   color: '#e0604f' },
+  threads:   { label: 'Threads',   color: '#b39ddb' },
+};
+let schedule = [];
+let calMonth = (() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); })();
+let calChannelFilter = null;
+
+async function loadSchedule() {
+  schedule = await (await fetch('/api/schedule')).json();
+  renderCalendar();
+}
+
+const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+function renderCalendar() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  $('#cal-title').textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+  // channel filter chips
+  $('#cal-channel-filters').innerHTML = Object.entries(CHANNELS).map(([k, c]) =>
+    `<span class="chip ch-chip ${calChannelFilter === k ? 'on' : ''}" data-ch="${k}"><span class="dot" style="background:${c.color}"></span>${c.label}</span>`).join('');
+  document.querySelectorAll('#cal-channel-filters .chip').forEach(ch => ch.addEventListener('click', () => {
+    calChannelFilter = calChannelFilter === ch.dataset.ch ? null : ch.dataset.ch;
+    renderCalendar();
+  }));
+
+  const byDay = {};
+  for (const p of schedule) {
+    if (!p.scheduledAt) continue;
+    if (calChannelFilter && !(p.channels || []).includes(calChannelFilter)) continue;
+    const d = new Date(p.scheduledAt);
+    (byDay[dayKey(d)] ||= []).push(p);
+  }
+  Object.values(byDay).forEach(l => l.sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt)));
+
+  const first = new Date(y, m, 1);
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const lead = (first.getDay() + 6) % 7; // Monday-first
+  const todayK = dayKey(new Date());
+
+  let html = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < lead; i++) html += '<div class="cal-cell blank"></div>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const k = dayKey(new Date(y, m, day));
+    const posts = byDay[k] || [];
+    const cls = ['cal-cell', k === todayK ? 'today' : '', k < todayK ? 'past' : ''].join(' ');
+    html += `<div class="${cls}" data-day="${k}">
+      <span class="d">${day}</span>
+      ${posts.map(p => {
+        const ch = (p.channels || [])[0] || '';
+        const time = new Date(p.scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const label = p.title || p.text || '(untitled)';
+        const multi = (p.channels || []).length > 1 ? ` +${p.channels.length - 1}` : '';
+        return `<div class="cal-post ch-${esc(ch)} ${esc(p.status || 'draft')}" data-post="${p.id}" title="${esc(label)} — ${(p.channels || []).map(c => CHANNELS[c]?.label || c).join(', ')}">
+          <span class="t">${time}</span>${p.source === 'buffer' ? '⚡' : ''}${esc(label)}${multi}</div>`;
+      }).join('')}
+    </div>`;
+  }
+  $('#cal-grid').innerHTML = html;
+
+  $('#cal-legend').innerHTML =
+    Object.values(CHANNELS).map(c => `<span><span class="dot" style="background:${c.color}"></span>${c.label}</span>`).join('') +
+    '<span style="margin-left:auto">⚡ synced from Buffer · dashed = draft · struck = sent</span>';
+
+  document.querySelectorAll('.cal-cell[data-day]').forEach(cell => cell.addEventListener('click', (e) => {
+    const pill = e.target.closest('.cal-post');
+    if (pill) return openPostModal(pill.dataset.post);
+    openPostModal(null, cell.dataset.day);
+  }));
+}
+
+$('#cal-prev').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); });
+$('#cal-next').addEventListener('click', () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); });
+$('#cal-today').addEventListener('click', () => { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); renderCalendar(); });
+$('#cal-new').addEventListener('click', () => openPostModal(null, dayKey(new Date())));
+
+function openPostModal(postId, presetDay) {
+  const p = postId ? schedule.find(x => x.id === postId) : null;
+  const dt = p ? new Date(p.scheduledAt) : null;
+  const date = p ? dayKey(dt) : (presetDay || dayKey(new Date()));
+  const time = p ? dt.toTimeString().slice(0, 5) : '17:00';
+  const chs = new Set(p?.channels || []);
+  $('#modal').innerHTML = `
+    <button class="btn small close" id="modal-close">✕ close</button>
+    <h3>${p ? 'Edit post' : 'Schedule a post'} ${p?.source === 'buffer' ? '<span class="pill s-filming" style="margin-left:6px">⚡ from Buffer</span>' : ''}</h3>
+    <div class="section">
+      <div class="lbl">Channels</div>
+      <div class="chset" id="pm-channels">${Object.entries(CHANNELS).map(([k, c]) =>
+        `<span class="chip ch-chip ${chs.has(k) ? 'on' : ''}" data-ch="${k}"><span class="dot" style="background:${c.color}"></span>${c.label}</span>`).join('')}</div>
+    </div>
+    <div class="section" style="display:flex;gap:10px">
+      <div style="flex:1"><div class="lbl">Date</div><input type="date" id="pm-date" value="${date}" style="width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:inherit"></div>
+      <div style="flex:1"><div class="lbl">Time</div><input type="time" id="pm-time" value="${time}" style="width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:inherit"></div>
+      <div style="flex:1"><div class="lbl">Status</div><select id="pm-status" style="width:100%">${['draft','scheduled','sent'].map(s => `<option value="${s}" ${(p?.status || 'draft') === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="section"><div class="lbl">Title (internal)</div><input type="text" id="pm-title" value="${esc(p?.title || '')}" placeholder="e.g. Workshop recap reel" style="width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:inherit"></div>
+    <div class="section"><div class="lbl">Caption / text</div><textarea id="pm-text" rows="4" placeholder="Post copy…">${esc(p?.text || '')}</textarea></div>
+    <div class="section"><div class="lbl">Remix brief (optional)</div><select id="pm-remix" style="width:100%"><option value="">— none —</option>${remixes.map(r => `<option value="${r.id}" ${p?.remixId === r.id ? 'selected' : ''}>${esc(r.title)}</option>`).join('')}</select></div>
+    <div class="section" style="display:flex;gap:10px;justify-content:space-between">
+      <div>${p ? '<button class="btn danger" id="pm-delete">Delete</button>' : ''}</div>
+      <button class="btn primary" id="pm-save">${p ? 'Save changes' : 'Add to calendar'}</button>
+    </div>`;
+  backdrop.classList.add('open');
+  $('#modal-close').addEventListener('click', closeModal);
+  document.querySelectorAll('#pm-channels .chip').forEach(ch => ch.addEventListener('click', () => {
+    const k = ch.dataset.ch;
+    chs.has(k) ? chs.delete(k) : chs.add(k);
+    ch.classList.toggle('on');
+  }));
+  $('#pm-save').addEventListener('click', async () => {
+    const body = {
+      title: $('#pm-title').value.trim(),
+      text: $('#pm-text').value,
+      channels: [...chs],
+      status: $('#pm-status').value,
+      remixId: $('#pm-remix').value || null,
+      scheduledAt: new Date(`${$('#pm-date').value}T${$('#pm-time').value || '12:00'}`).toISOString(),
+    };
+    if (!body.title && !body.text) return toast('Add a title or caption');
+    if (!chs.size) return toast('Pick at least one channel');
+    await fetch(p ? '/api/schedule/' + p.id : '/api/schedule', {
+      method: p ? 'PATCH' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+    });
+    closeModal();
+    await loadSchedule();
+    toast(p ? 'Post updated ✓' : 'Post scheduled ✓');
+  });
+  if (p) $('#pm-delete')?.addEventListener('click', async () => {
+    if (!confirm('Remove this post from the calendar?')) return;
+    await fetch('/api/schedule/' + p.id, { method: 'DELETE' });
+    closeModal();
+    await loadSchedule();
+    toast('Post removed');
+  });
+}
+
+// datalist for tag suggestions
+const dl = document.createElement('datalist');
+dl.id = 'tag-suggestions';
+dl.innerHTML = SUGGESTED_TAGS.map(t => `<option value="${t}">`).join('');
+document.body.appendChild(dl);
+
+// ---- Library ----
+let libVideos = [];
+
+function openSlides(vIdx, fIdx) {
+  const v = libVideos[vIdx];
+  if (!v || !v.frames || !v.frames.length) return;
+  const f = ((fIdx % v.frames.length) + v.frames.length) % v.frames.length;
+  $('#modal').innerHTML = `
+    <div class="slide-viewer">
+      <h2 style="margin-top:0">🎬 ${esc(v.name)} — slide ${f + 1}/${v.frames.length}</h2>
+      <div class="sv-stage">
+        <button class="btn small" id="sv-prev">←</button>
+        <img src="${esc(v.frames[f])}" alt="slide ${f + 1}">
+        <button class="btn small" id="sv-next">→</button>
+      </div>
+      <div class="sv-strip">
+        ${v.frames.map((u, i) => `<img src="${esc(u)}" data-i="${i}" class="${i === f ? 'cur' : ''}" alt="">`).join('')}
+      </div>
+    </div>`;
+  backdrop.classList.add('open');
+  $('#sv-prev').addEventListener('click', () => openSlides(vIdx, f - 1));
+  $('#sv-next').addEventListener('click', () => openSlides(vIdx, f + 1));
+  document.querySelectorAll('.sv-strip img').forEach(im => im.addEventListener('click', () => openSlides(vIdx, Number(im.dataset.i))));
+}
+
+async function startRender(name, btn) {
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = '⏳ Rendering…';
+  const res = await fetch(`/api/render/${name}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ upload: true }),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    toast(d.error || 'Render failed to start');
+    btn.disabled = false; btn.textContent = label;
+    return;
+  }
+  const poll = setInterval(async () => {
+    const job = await (await fetch(`/api/render/${name}`)).json();
+    if (job.status === 'done') {
+      clearInterval(poll);
+      toast(`Rendered ${name} ✓${job.asset ? ' — added to assets' : ''}`);
+      await Promise.all([loadAssets(), loadLibrary()]);
+    } else if (job.status === 'error') {
+      clearInterval(poll);
+      toast(`Render failed: ${job.error || 'unknown error'}`);
+      btn.disabled = false; btn.textContent = label;
+    }
+  }, 3000);
+}
+
+async function loadLibrary() {
+  const { videos, batches } = await (await fetch('/api/library')).json();
+  libVideos = videos;
+  $('#lib-videos').innerHTML = videos.length ? videos.map((v, i) => `
+    <div class="lib-card">
+      ${v.thumb
+        ? `<img class="thumb expandable" data-idx="${i}" src="${esc(v.thumb)}" alt="" title="Click to see every slide">`
+        : `<div class="thumb empty">🎬</div>`}
+      <div class="body">
+        <h4>${esc(v.name)}</h4>
+        <p class="msg">${esc(v.message || 'No brief message')}</p>
+        <div class="lib-badges">
+          ${v.render ? `<span class="ok">✅ rendered</span>` : `<span>🛠 draft</span>`}
+          ${v.aspect ? `<span>${esc(v.aspect)}</span>` : ''}
+          ${v.length ? `<span>${esc(v.length)}</span>` : ''}
+          ${v.language ? `<span>${esc(v.language.split(' ')[0].toUpperCase())}</span>` : ''}
+          ${v.destination ? `<span>${esc(v.destination)}</span>` : ''}
+          <span>${esc(v.path)}</span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          ${v.frames && v.frames.length ? `<button class="btn small expandable" data-idx="${i}">🖼 Slides (${v.frames.length})</button>` : ''}
+          ${v.render ? `<a class="btn small" href="${esc(v.render)}" target="_blank">▶ Watch render</a>` : ''}
+          <button class="btn small render-btn" data-name="${esc(v.name)}">🎬 Render${v.render ? ' again' : ''}</button>
+          ${v.render ? `<button class="btn small lib-upload-btn" data-name="${esc(v.name)}">⬆ To assets</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('') : '<p class="muted">No video projects yet — they live in <code>videos/</code>.</p>';
+  document.querySelectorAll('#lib-videos .expandable').forEach(el => el.addEventListener('click', () => openSlides(Number(el.dataset.idx), 0)));
+  document.querySelectorAll('#lib-videos .render-btn').forEach(el => el.addEventListener('click', () => startRender(el.dataset.name, el)));
+  document.querySelectorAll('#lib-videos .lib-upload-btn').forEach(el => el.addEventListener('click', async () => {
+    el.disabled = true;
+    const res = await fetch(`/api/library/${el.dataset.name}/upload`, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    el.disabled = false;
+    if (!res.ok) { toast(data.error || 'Upload failed'); return; }
+    toast('Added to My Photos & Videos ✓');
+    await loadAssets();
+  }));
+  $('#lib-batches').innerHTML = batches.length ? batches.map(b => `
+    <div class="lib-batch" data-file="${esc(b.file)}">
+      <span>📄</span><b>${esc(b.title)}</b>
+      <span class="cnt">${b.remixCount} remix${b.remixCount === 1 ? '' : 'es'} · ${esc(b.path)}</span>
+    </div>`).join('') : '<p class="muted">No remix batches yet.</p>';
+  document.querySelectorAll('.lib-batch').forEach(el => el.addEventListener('click', async () => {
+    const md = await (await fetch('/api/library/batch/' + el.dataset.file)).text();
+    $('#modal').innerHTML = `<h2 style="margin-top:0">📄 ${esc(el.dataset.file)}</h2><pre class="batch-md">${esc(md)}</pre>`;
+    backdrop.classList.add('open');
+  }));
+}
+
+(async () => {
+  await Promise.all([loadAssets(), loadOutliers(), loadRemixes(), loadSchedule(), loadLibrary()]);
+  renderRemixes();
+})();
+</script>
+</body>
+</html>

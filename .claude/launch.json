@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "content-studio",
+      "cwd": "dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 4321,
+      "autoPort": true
+    },
+    {
+      "name": "reel-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "hyperframes@0.7.68", "preview", "videos/ai-tools-reel", "--no-open"],
+      "port": 3002
+    },
+    {
+      "name": "writing-fix-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "hyperframes@0.7.68", "preview", "videos/ai-writing-fix-slideshow", "--no-open", "--port=3004"],
+      "port": 3004
+    },
+    {
+      "name": "escape-news-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "hyperframes@0.7.68", "preview", "videos/ai-escape-news-slideshow", "--no-open", "--port=3005"],
+      "port": 3005
+    }
+  ]
+}

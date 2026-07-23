@@ -1,0 +1,24 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev:cf": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "seed": "node scripts/make-seed-sql.js && wrangler d1 execute aimeetup-dashboard --remote --file seed.sql -y"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.113.0"
+  }
+}

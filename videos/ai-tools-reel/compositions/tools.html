@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          background: #0c2527;
+          color: #f6efdf;
+          font-family: "Archivo Black", sans-serif;
+          overflow: hidden;
+        }
+        .t-glow {
+          position: absolute;
+          right: -460px;
+          top: -320px;
+          width: 1250px;
+          height: 1250px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(214, 68, 30, 0.5) 0%, rgba(214, 68, 30, 0) 65%);
+          opacity: 0.28;
+          z-index: 1;
+        }
+        .t-hairline {
+          position: absolute;
+          left: 80px;
+          right: 80px;
+          height: 2px;
+          background: rgba(134, 199, 176, 0.32);
+          transform-origin: left center;
+          z-index: 2;
+        }
+        #t-line-a {
+          top: 330px;
+        }
+        #t-line-b {
+          bottom: 460px;
+        }
+        .t-phase {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          z-index: 3;
+          will-change: transform;
+        }
+        #t-p1 {
+          z-index: 3;
+        }
+        #t-p2 {
+          z-index: 4;
+        }
+        #t-p3 {
+          z-index: 5;
+        }
+        .t-ghost {
+          position: absolute;
+          top: 100px;
+          left: -50px;
+          font-size: 300px;
+          letter-spacing: -0.04em;
+          color: #f6efdf;
+          opacity: 0.06;
+          white-space: nowrap;
+        }
+        .t-stage {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 0 80px 200px 80px;
+        }
+        .t-kicker {
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 30px;
+          letter-spacing: 0.14em;
+          color: #86c7b0;
+          margin-bottom: 30px;
+          opacity: 0;
+        }
+        .t-index {
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 210px;
+          line-height: 0.9;
+          color: #0c2527;
+          -webkit-text-fill-color: #0c2527;
+          -webkit-text-stroke: 4px #ff6a45;
+          margin-bottom: 8px;
+          opacity: 0;
+          will-change: transform;
+          transform-origin: 0% 50%;
+        }
+        .t-name {
+          font-size: 118px;
+          line-height: 1;
+          letter-spacing: -0.03em;
+          margin-bottom: 40px;
+          opacity: 0;
+          will-change: transform;
+        }
+        .t-line {
+          font-family: "Space Mono", monospace;
+          font-weight: 400;
+          font-size: 40px;
+          line-height: 1.5;
+          max-width: 880px;
+          color: rgba(246, 239, 223, 0.92);
+          margin-bottom: 48px;
+          opacity: 0;
+          will-change: transform;
+        }
+        .t-tag {
+          display: inline-block;
+          align-self: flex-start;
+          font-family: "Space Mono", monospace;
+          font-weight: 700;
+          font-size: 30px;
+          letter-spacing: 0.08em;
+          color: #86c7b0;
+          border: 3px solid #86c7b0;
+          border-radius: 999px;
+          padding: 18px 34px;
+          opacity: 0;
+          will-change: transform;
+        }
+      </style>
+
+      <div data-hf-id="hf-x3hn" id="root" data-composition-id="tools" data-width="1080" data-height="1920" data-duration="19.5">
+        <div data-hf-id="hf-wi97" class="t-glow" id="t-glow" data-layout-allow-overflow=""></div>
+        <div data-hf-id="hf-76mg" class="t-hairline" id="t-line-a"></div>
+        <div data-hf-id="hf-i243" class="t-hairline" id="t-line-b"></div>
+
+        <div data-hf-id="hf-f1p4" class="t-phase" id="t-p1">
+          <div data-hf-id="hf-o4va" class="t-ghost" id="t-g1" data-layout-allow-overflow="">CLAUDE</div>
+          <div data-hf-id="hf-yuhh" class="t-stage">
+            <div data-hf-id="hf-kk2o" class="t-kicker" id="t-k1">TOOL 01 / 03</div>
+            <div data-hf-id="hf-v9wh" class="t-index" id="t-i1">01</div>
+            <div data-hf-id="hf-7wcq" class="t-name" id="t-n1">CLAUDE</div>
+            <div data-hf-id="hf-cdvc" class="t-line" id="t-l1">Turn one client call into a full proposal draft.</div>
+            <div data-hf-id="hf-1mmk" class="t-tag" id="t-t1">→ PITCH FASTER</div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-npkz" class="t-phase" id="t-p2">
+          <div data-hf-id="hf-h5ud" class="t-ghost" id="t-g2" data-layout-allow-overflow="">MIDJOURNEY</div>
+          <div data-hf-id="hf-oa2x" class="t-stage">
+            <div data-hf-id="hf-oaf0" class="t-kicker" id="t-k2">TOOL 02 / 03</div>
+            <div data-hf-id="hf-lq9b" class="t-index" id="t-i2">02</div>
+            <div data-hf-id="hf-xqjt" class="t-name" id="t-n2">MIDJOURNEY</div>
+            <div data-hf-id="hf-59fb" class="t-line" id="t-l2">Mockups that close design clients before you write code.</div>
+            <div data-hf-id="hf-7qe9" class="t-tag" id="t-t2">→ SELL THE VISION</div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-jrgy" class="t-phase" id="t-p3">
+          <div data-hf-id="hf-x7la" class="t-ghost" id="t-g3" data-layout-allow-overflow="">GRANOLA</div>
+          <div data-hf-id="hf-ph00" class="t-stage">
+            <div data-hf-id="hf-ridg" class="t-kicker" id="t-k3">TOOL 03 / 03</div>
+            <div data-hf-id="hf-yn0d" class="t-index" id="t-i3">03</div>
+            <div data-hf-id="hf-zo8a" class="t-name" id="t-n3">GRANOLA</div>
+            <div data-hf-id="hf-8mtf" class="t-line" id="t-l3">Meeting notes while you're actually listening.</div>
+            <div data-hf-id="hf-kh1r" class="t-tag" id="t-t3">→ STAY PRESENT</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const F = 1 / 30;
+          const DUR = 19.5;
+          const PHASE = 6.5;
+
+          // Shared backdrop: hairlines draw once, glow holds a slow bounded breathe.
+          tl.fromTo("#t-line-a", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.1);
+          tl.fromTo("#t-line-b", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.25);
+          const phaseProxy = { p: 0 };
+          const CYCLES = 5;
+          tl.to(
+            phaseProxy,
+            {
+              p: Math.PI * 2 * CYCLES,
+              duration: DUR - 0.2,
+              ease: "none",
+              onUpdate: function () {
+                const el = document.getElementById("t-glow");
+                if (!el) return;
+                const prog = phaseProxy.p / (Math.PI * 2 * CYCLES);
+                const env = prog < 0.85 ? 1 : (1 - prog) / 0.15;
+                const s = Math.sin(phaseProxy.p);
+                el.style.opacity = String(0.28 + s * 0.035 * env);
+              },
+            },
+            0.2,
+          );
+
+          // One phase = one build; entrances vary by axis, exit is a scale-swap out.
+          function buildPhase(n, S, isLast) {
+            const p = "#t-p" + n;
+            tl.set(p, { opacity: 1 }, S);
+            // Ghost drifts for the phase's whole window.
+            tl.fromTo("#t-g" + n, { x: 0 }, { x: -60, duration: PHASE, ease: "none" }, S);
+            // Kicker rises.
+            tl.fromTo(
+              "#t-k" + n,
+              { opacity: 0, y: 22 },
+              { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" },
+              S + 0.15,
+            );
+            // Index: spring-pop from the left edge, smooth settle.
+            tl.fromTo(
+              "#t-i" + n,
+              { opacity: 0, scale: 0 },
+              { opacity: 1, scale: 1, duration: 0.55, ease: "power3.out" },
+              S + 0.1,
+            );
+            // Name: hard side-snap.
+            tl.fromTo(
+              "#t-n" + n,
+              { opacity: 0, x: -320 },
+              { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" },
+              S + 0.45,
+            );
+            // Workflow line: whip from below, binary reveal.
+            tl.set("#t-l" + n, { opacity: 1, y: 46 }, S + 0.95);
+            tl.to("#t-l" + n, { y: 0, duration: 0.16, ease: "power4.out" }, S + 0.95);
+            // Tag pill: playful pop (island-casual brand register).
+            tl.fromTo(
+              "#t-t" + n,
+              { opacity: 0, scale: 0 },
+              { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" },
+              S + 1.5,
+            );
+            // Exit: shrink-and-fade so the next phase pops into the vacuum.
+            if (!isLast) {
+              tl.to(
+                p,
+                { opacity: 0, scale: 0.88, duration: 0.35, ease: "power2.in" },
+                S + PHASE - 0.35,
+              );
+            }
+          }
+
+          buildPhase(1, 0, false);
+          buildPhase(2, PHASE, false);
+          buildPhase(3, PHASE * 2, true);
+
+          window.__timelines["tools"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

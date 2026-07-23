@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>5 AI Tools — AI Club Lombok</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Archivo Black";
+        font-weight: 400;
+        font-style: normal;
+        src: url("assets/fonts/archivo-black-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 400;
+        font-style: normal;
+        src: url("assets/fonts/space-mono-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 700;
+        font-style: normal;
+        src: url("assets/fonts/space-mono-700.woff2") format("woff2");
+      }
+      :root {
+        --bg: #0c1714;
+        --fg: #f4f1e8;
+        --accent: #2fc79f;
+        --muted: #a8b8b0;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); font-family: "Space Mono", monospace; color: var(--fg); }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .clip { position: absolute; inset: 0; overflow: hidden; }
+
+      /* --- slide scaffolding --- */
+      .slide-fill { position: absolute; inset: 0; background: var(--bg); }
+      .bg-wrap { position: absolute; inset: -80px; }
+      .bg-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        filter: blur(9px) saturate(0.75) brightness(0.55);
+        display: block;
+      }
+      .tint { position: absolute; inset: 0; background: #0c1714; opacity: 0.45; }
+      .vignette {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 120% 90% at 50% 42%, transparent 30%, rgba(6, 14, 12, 0.88) 100%);
+      }
+      .grain {
+        position: absolute; inset: 0; opacity: 0.14;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+      }
+
+      .chip {
+        position: absolute; top: 96px; left: 84px;
+        display: inline-flex; align-items: center; gap: 16px;
+        font: 700 26px/1 "Space Mono", monospace;
+        letter-spacing: 0.12em;
+        color: var(--fg);
+        padding: 18px 26px;
+        border: 3px solid var(--accent);
+        border-radius: 999px;
+        background: rgba(12, 23, 20, 0.55);
+      }
+      .chip .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+      .ghost-num {
+        position: absolute; top: 190px; right: 56px;
+        font: 400 440px/0.9 "Archivo Black", sans-serif;
+        color: rgba(47, 199, 159, 0.16);
+        -webkit-text-stroke: 4px rgba(47, 199, 159, 0.78);
+        letter-spacing: -0.04em;
+      }
+
+      .stack {
+        position: absolute; left: 84px; right: 84px; bottom: 430px;
+        display: flex; flex-direction: column; align-items: flex-start; gap: 34px;
+      }
+      .kicker {
+        font: 700 28px/1 "Space Mono", monospace;
+        letter-spacing: 0.28em;
+        color: var(--accent);
+      }
+      .tool-name {
+        font: 400 116px/1.02 "Archivo Black", sans-serif;
+        letter-spacing: -0.03em;
+        color: var(--fg);
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .line-id {
+        font: 400 46px/1.32 "Archivo Black", sans-serif;
+        color: var(--fg);
+        margin: 0;
+        max-width: 880px;
+      }
+      .line-en {
+        font: 400 31px/1.5 "Space Mono", monospace;
+        color: var(--muted);
+        margin: 0;
+        max-width: 860px;
+      }
+      .rule { height: 6px; width: 220px; background: var(--accent); transform-origin: left center; }
+
+      .idx-rail {
+        position: absolute; left: 84px; bottom: 310px;
+        display: flex; gap: 14px;
+      }
+      .idx-rail i { width: 46px; height: 8px; background: rgba(244, 241, 232, 0.22); display: block; }
+      .idx-rail i.on { background: var(--accent); }
+
+      /* --- hook slide --- */
+      #s1-title {
+        font: 400 168px/0.98 "Archivo Black", sans-serif;
+        letter-spacing: -0.035em;
+        margin: 0;
+        color: var(--fg);
+        text-transform: uppercase;
+      }
+      #s1-title .w { display: inline-block; }
+      #s1-title .hl { color: var(--accent); }
+      .underline-swipe { height: 12px; width: 640px; background: var(--accent); transform-origin: left center; }
+
+      /* --- CTA slide --- */
+      #s7-free {
+        font: 400 92px/1.08 "Archivo Black", sans-serif;
+        letter-spacing: -0.03em; margin: 0; text-transform: uppercase;
+        max-width: 900px;
+      }
+      #s7-free em { font-style: normal; color: var(--accent); }
+      .lockup {
+        display: flex; align-items: center; gap: 26px;
+        padding: 30px 40px;
+        border: 4px solid var(--accent);
+        background: rgba(12, 23, 20, 0.72);
+        border-radius: 20px;
+      }
+      .lockup .mark {
+        width: 72px; height: 72px; border-radius: 18px;
+        background: var(--accent);
+        display: grid; place-items: center;
+        font: 400 40px/1 "Archivo Black", sans-serif;
+        color: #0c1714;
+      }
+      .lockup .name { font: 400 54px/1 "Archivo Black", sans-serif; letter-spacing: -0.01em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="32">
+
+      <!-- ============ S1 · HOOK 0–3.6 ============ -->
+      <section id="s1" class="clip" data-start="0" data-duration="3.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s1-bg"><img id="s1-img" src="assets/cafe-a.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip" id="s1-chip"><span class="dot"></span>AI CLUB LOMBOK</div>
+        <div class="stack" style="bottom: 560px; gap: 40px;">
+          <h1 id="s1-title"><span class="w">5</span> <span class="w hl">AI</span> <span class="w hl">TOOLS</span></h1>
+          <div class="underline-swipe" id="s1-underline"></div>
+          <p class="line-id" id="s1-id">that level up Lombok freelancers 📈</p>
+          <p class="line-en" id="s1-en">// learn them free at AI Club Lombok</p>
+        </div>
+        <div class="idx-rail" id="s1-rail" style="bottom: 460px;">
+          <i class="on"></i><i></i><i></i><i></i><i></i>
+        </div>
+      </section>
+
+      <!-- ============ S2 · CLAUDE 3.6–8.2 ============ -->
+      <section id="s2" class="clip" data-start="3.6" data-duration="4.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s2-bg"><img id="s2-img" src="assets/cafe-b.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip"><span class="dot"></span>TOOL 01</div>
+        <div class="ghost-num" id="s2-num">01</div>
+        <div class="stack" id="s2-stack">
+          <span class="kicker">PROPOSALS &amp; CLIENT EMAILS</span>
+          <h2 class="tool-name">Claude</h2>
+          <div class="rule" id="s2-rule"></div>
+          <p class="line-id">Client proposals done in 2 minutes</p>
+          <p class="line-en">// drafts, replies, proposals — in your voice</p>
+        </div>
+        <div class="idx-rail"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </section>
+
+      <!-- ============ S3 · CANVA 8.2–12.8 ============ -->
+      <section id="s3" class="clip" data-start="8.2" data-duration="4.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s3-bg"><img id="s3-img" src="assets/cafe-a.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip"><span class="dot"></span>TOOL 02</div>
+        <div class="ghost-num" id="s3-num">02</div>
+        <div class="stack" id="s3-stack">
+          <span class="kicker">DESIGN WITHOUT A DESIGNER</span>
+          <h2 class="tool-name">Canva Magic</h2>
+          <div class="rule" id="s3-rule"></div>
+          <p class="line-id">Your IG feed, pro-level — no designer</p>
+          <p class="line-en">// templates + Magic Studio do the work</p>
+        </div>
+        <div class="idx-rail"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+      </section>
+
+      <!-- ============ S4 · CAPCUT 12.8–17.4 ============ -->
+      <section id="s4" class="clip" data-start="12.8" data-duration="4.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s4-bg"><img id="s4-img" src="assets/cafe-b.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip"><span class="dot"></span>TOOL 03</div>
+        <div class="ghost-num" id="s4-num">03</div>
+        <div class="stack" id="s4-stack">
+          <span class="kicker">VIDEO EDITING</span>
+          <h2 class="tool-name">CapCut AI</h2>
+          <div class="rule" id="s4-rule"></div>
+          <p class="line-id">Edit reels 10× faster — auto captions</p>
+          <p class="line-en">// built-in auto-captions, free</p>
+        </div>
+        <div class="idx-rail"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+      </section>
+
+      <!-- ============ S5 · GAMMA 17.4–22.0 ============ -->
+      <section id="s5" class="clip" data-start="17.4" data-duration="4.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s5-bg"><img id="s5-img" src="assets/cafe-a.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip"><span class="dot"></span>TOOL 04</div>
+        <div class="ghost-num" id="s5-num">04</div>
+        <div class="stack" id="s5-stack">
+          <span class="kicker">INSTANT DECKS</span>
+          <h2 class="tool-name">Gamma</h2>
+          <div class="rule" id="s5-rule"></div>
+          <p class="line-id">Instant pitch decks for client meetings</p>
+          <p class="line-en">// a full deck from a single prompt</p>
+        </div>
+        <div class="idx-rail"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+      </section>
+
+      <!-- ============ S6 · NOTEBOOKLM 22.0–26.6 ============ -->
+      <section id="s6" class="clip" data-start="22" data-duration="4.6" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s6-bg"><img id="s6-img" src="assets/cafe-b.jpg" alt="" /></div>
+        <div class="tint"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip"><span class="dot"></span>TOOL 05</div>
+        <div class="ghost-num" id="s6-num">05</div>
+        <div class="stack" id="s6-stack">
+          <span class="kicker">LEARN NEW SKILLS</span>
+          <h2 class="tool-name">NotebookLM</h2>
+          <div class="rule" id="s6-rule"></div>
+          <p class="line-id">A free mentor, 24/7 — feed it any PDF or video</p>
+          <p class="line-en">// upload a document, get a tutor</p>
+        </div>
+        <div class="idx-rail"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      </section>
+
+      <!-- ============ S7 · CTA 26.6–32.0 ============ -->
+      <section id="s7" class="clip" data-start="26.6" data-duration="5.4" data-track-index="1">
+        <div class="slide-fill"></div>
+        <div class="bg-wrap" data-layout-allow-overflow id="s7-bg"><img id="s7-img" src="assets/meetup.jpg" alt="" /></div>
+        <div class="tint" style="opacity: 0.6;"></div><div class="vignette"></div><div class="grain"></div>
+        <div class="chip" id="s7-chip"><span class="dot"></span>COMMUNITY · LOMBOK</div>
+        <div class="stack" style="bottom: 400px; gap: 44px;">
+          <h2 id="s7-free">We break these all down <em>FREE</em> 🌴</h2>
+          <div class="lockup" id="s7-lockup">
+            <div class="mark">AI</div>
+            <div class="name">AI CLUB LOMBOK</div>
+          </div>
+          <p class="line-en" id="s7-join">// Join the WhatsApp group — link in bio. Live at the next meetup.</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const EASE_IN = "power3.out";
+
+      // ---- S1 · hook (kinetic-type: per-word stagger + underline draw) ----
+      tl.fromTo("#s1-bg", { scale: 1.06, xPercent: -2 }, { scale: 1.14, xPercent: 2, duration: 3.6, ease: "none" }, 0);
+      tl.from("#s1-chip", { y: -40, opacity: 0, duration: 0.5, ease: EASE_IN }, 0.15);
+      tl.from("#s1-title .w", { yPercent: 110, opacity: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.14 }, 0.35);
+      tl.fromTo("#s1-underline", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power4.out" }, 1.05);
+      tl.from("#s1-id", { y: 46, opacity: 0, duration: 0.55, ease: EASE_IN }, 1.25);
+      tl.from("#s1-en", { opacity: 0, duration: 0.45, ease: "none" }, 1.65);
+      tl.from("#s1-rail i", { opacity: 0, x: -18, duration: 0.3, ease: EASE_IN, stagger: 0.06 }, 1.8);
+
+      // ---- S2–S6 · tool cards (titlecard-reveal card chain; hard-cut seams) ----
+      const slides = [
+        { id: "s2", start: 3.6, dir: 1 },
+        { id: "s3", start: 8.2, dir: -1 },
+        { id: "s4", start: 12.8, dir: 1 },
+        { id: "s5", start: 17.4, dir: -1 },
+        { id: "s6", start: 22.0, dir: 1 },
+      ];
+      slides.forEach(({ id, start, dir }) => {
+        // micro-drift on the backdrop (multi-phase-camera, micro register)
+        tl.fromTo(`#${id}-bg`,
+          { scale: 1.06, xPercent: 2.4 * dir },
+          { scale: 1.14, xPercent: -2.4 * dir, duration: 4.6, ease: "none" }, start);
+        // ghost number: soft spring settle (spring-pop-entrance, single beat)
+        tl.from(`#${id}-num`, { scale: 0.82, opacity: 0, duration: 0.65, ease: "back.out(1.4)" }, start + 0.1);
+        // the ONE restrained move: stack rises together, then holds
+        tl.from(`#${id}-stack > *`, { y: 54, opacity: 0, duration: 0.6, ease: EASE_IN, stagger: 0.09 }, start + 0.25);
+        tl.fromTo(`#${id}-rule`, { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power4.out" }, start + 0.6);
+      });
+
+      // ---- S7 · CTA (kinetic-type CTA: value line → lockup spring-pop → long hold) ----
+      tl.fromTo("#s7-bg", { scale: 1.16 }, { scale: 1.06, duration: 5.4, ease: "none" }, 26.6);
+      tl.from("#s7-chip", { y: -40, opacity: 0, duration: 0.5, ease: EASE_IN }, 26.75);
+      tl.from("#s7-free", { y: 60, opacity: 0, duration: 0.6, ease: EASE_IN }, 26.95);
+      tl.from("#s7-lockup", { scale: 0.7, opacity: 0, duration: 0.7, ease: "back.out(1.8)" }, 27.55);
+      tl.from("#s7-join", { opacity: 0, y: 26, duration: 0.5, ease: EASE_IN }, 28.15);
+      // subtle breathing on the held lockup (sine-wave-loop, finite repeats)
+      tl.to("#s7-lockup", { scale: 1.02, duration: 0.9, ease: "sine.inOut", repeat: 3, yoyo: true }, 28.4);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "comment": "Config for the ads outlier pipeline (see ../../IMPLEMENTATION_PLAN_ADS.md). Rotate queries here, never in code. Cost caps are passed as maxTotalChargeUsd per actor run.",
+  "meta": {
+    "actor": "curious_coder/facebook-ads-library-scraper",
+    "backupActor": "constructive_calm/facebook-ad-library-pro",
+    "maxTotalChargeUsd": 5,
+    "input": {
+      "urls": [
+        { "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=%22AI%20tools%22&search_type=keyword_unordered&media_type=all" },
+        { "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=%22learn%20AI%22&search_type=keyword_unordered&media_type=all" },
+        { "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=GB&q=%22AI%20course%22&search_type=keyword_unordered&media_type=all" },
+        { "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=NL&q=%22AI%20tools%22&search_type=keyword_unordered&media_type=all" },
+        { "url": "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=%22AI%20community%22&search_type=keyword_unordered&media_type=all" }
+      ],
+      "limitPerSource": 80,
+      "count": 400,
+      "scrapeAdDetails": true,
+      "runTag": "lombok-ads-v1"
+    },
+    "raw": "raw/ads-meta.json"
+  },
+  "tiktok": {
+    "actor": "azzouzana/tiktok-creative-center-top-ads-scraper",
+    "backupActor": "dltik/tiktok-creative-center",
+    "maxTotalChargeUsd": 2,
+    "runs": [
+      { "input": { "keyword": "AI", "countryCode": "US", "period": "30", "orderBy": "ctr", "maxItems": 120, "extractDetails": true, "adLanguage": "en" } },
+      { "input": { "keyword": "ChatGPT", "countryCode": "US", "period": "30", "orderBy": "for_you", "maxItems": 60, "extractDetails": true, "adLanguage": "en" } }
+    ],
+    "raw": "raw/ads-tiktok.json"
+  }
+}
