@@ -75,7 +75,7 @@ const PARTS = [
     id: 'memory', stage: null, name: 'Memory', title: 'Context & instructions', color: '#e0604f',
     desc: 'What Claude loads every session: routing rules, positioning, voice.',
     match: p => p === 'CLAUDE.md' || p === 'README.md' || p === 'LICENSE' || p === '.gitignore'
-      || p.startsWith('.agents/') || p.startsWith('.claude/'),
+      || p.startsWith('.agents/') || p.startsWith('.claude/') || p.startsWith('memory/'),
   },
   {
     id: 'employees', stage: null, name: 'Employees', title: 'AI employees & memory', color: '#e1559b',

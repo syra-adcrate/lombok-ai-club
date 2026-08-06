@@ -28,6 +28,25 @@ persona defined in `.claude/agents/xenorita.md`, portrait at
   their portraits) lives in `.agents/TEAM.md`. Only Xenorita is a full agent;
   the others are named faces on existing workflows and change no routing rules.
 
+## Second brain (`memory/`)
+
+`memory/` is the persistent work memory: `state.md` (current project state — read it at session
+start before re-deriving where things stand), `log/YYYY-MM-DD.md` (daily digests),
+`decisions.md` (append-only decision log), `routines.md` (registry of scheduled routines).
+Rules:
+
+1. **Read `memory/state.md` early in any working session** — don't reconstruct project state
+   from scratch.
+2. **When you make a decision or materially change state, update `decisions.md` / `state.md`
+   in the same commit as the work.** Daily digests are otherwise handled by the daily memory
+   routine.
+3. **Creating/updating/deleting a routine? Update `memory/routines.md` in the same session**,
+   following the spawning conventions in `memory/README.md`.
+4. The second brain holds *work and state* only — marketing positioning stays in
+   `.agents/product-marketing.md` via the skill (rule above), and `memory/` must never
+   duplicate it. Xenorita's customer memory (`.agents/customer-success/`) is likewise hers —
+   `memory/` links to it rather than duplicating it.
+
 ## Project facts
 
 - This project is the marketing/community workspace for **Lombok AI Club** — the AI & tech community in Kuta, Lombok, Indonesia.
