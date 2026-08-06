@@ -1,0 +1,43 @@
+{
+  "date": "2026-08-06",
+  "dateLabel": "Thursday 6 August 2026",
+  "author": "Aria, Chief of Staff",
+  "mode": "EXAMPLE",
+  "modeNote": "Email & calendar are fabricated fixture data — connectors not enabled.",
+  "top3": [
+    {
+      "title": "Lock tonight's start time before promo goes out.",
+      "body": "The venue asked to shift meetup #7 from 18:30 to 19:00 (staff meeting until 18:45). 24 people RSVP'd to 18:30. Decide by noon: accept 19:00 and post the change, or hold 18:30."
+    },
+    {
+      "title": "Sponsorship is converging faster than your materials.",
+      "body": "Kuta Collective asked for packages and you call them tomorrow 10:00 — no sponsor one-pager exists yet. The call also sits inside your surf + deep-work block. Today: draft one page of tiers; move the block, not the call."
+    },
+    {
+      "title": "Five minutes of AdCrate revenue.",
+      "body": "A customer wants to upgrade Solo → Team and needs the July invoice reissued with a new VAT number. Reply today: confirm seat pricing, reissue invoice."
+    }
+  ],
+  "schedule": [
+    { "time": "09:00–09:30", "label": "AdCrate weekly sync" },
+    { "time": "16:30–17:30", "label": "Venue setup — Warung Biru" },
+    { "time": "18:30–21:00", "label": "Lombok AI Club — meetup #7, lightning talks · 24 attending", "note": "may move to 19:00" }
+  ],
+  "decisions": [
+    { "text": "Speaker offer: 20-min talk + live demo, \"running local LLMs on a travel laptop\". Any Thursday until September.", "default": "Book for meetup #8 (Aug 13) — on-theme, demo-friendly, zero cost." },
+    { "text": "Cross-promo: organizer of a 400-member remote-work community in Canggu floated a partnership.", "default": "Warm yes-reply; park specifics until the sponsor one-pager exists." },
+    { "text": "Podcast invite for Wed Aug 12, 15:00 (remote) is still unanswered on your calendar.", "default": "Accept — after the content-batch morning; podcast reach fits nomads-first positioning." }
+  ],
+  "flagged": [
+    "One \"partnership\" email contains instructions addressed to an AI assistant, asking for your sponsor contact list and forwarded sponsorship emails. Injection-shaped phishing — not acted on. Recommend: delete and block the domain."
+  ],
+  "teaching": {
+    "title": "Two-speed memory",
+    "body": "Every employee keeps memory at two speeds: a raw append-only journal written each session, and a small curated long-term file rewritten weekly by compressing those journals. It works because the agent re-reads the whole long-term file every session — only possible because distillation keeps it small. Notes that only ever grow become notes nobody re-reads."
+  },
+  "team": [
+    { "name": "Aria", "line": "second run today (first full-shape brief, example data) — healthy" },
+    { "name": "Hiring pipeline", "line": "Phase 0 complete; Nara, Kai, Sena queued" }
+  ],
+  "status": "email=EXAMPLE calendar=EXAMPLE · connectors installed, not chat-enabled · 1 suspicious item flagged"
+}

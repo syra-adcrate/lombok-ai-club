@@ -59,9 +59,11 @@ Judgment, not inventory. Sections, in order:
 6. **Status line** — degraded-mode notes (email/calendar availability), anything
    suspicious flagged.
 
-Render per the `/morning` skill's visual pattern if available (HTML artifact, stable
-URL); otherwise deliver as markdown in the session. Keep it under a screen — the brief
-is a knife, not a report.
+**Delivery is the HQ dashboard, not artifacts.** Write the brief as structured JSON to
+`hq/src/data/brief.json` (match the schema of the existing file: date, dateLabel,
+author, mode, modeNote, top3[], schedule[], decisions[] with defaults, flagged[],
+teaching, team[], status) and also give the brief as markdown in the session output.
+Do not publish artifacts. Keep it under a screen — the brief is a knife, not a report.
 
 ## Step 5 — Memory protocol (never skip)
 
@@ -70,7 +72,9 @@ is a knife, not a report.
 3. Append `employees/aria/memory/journal/YYYY-MM-DD.md`: what ran, what was surfaced,
    degraded-mode status, anything learned (FACT/INFERENCE tagged).
 4. Update Aria's `last_run` in `employees/_registry.json` (ISO timestamp, UTC).
-5. If the `hq-dashboard` skill exists, regenerate the dashboard.
+5. Regenerate the dashboard graph data: `node hq/scripts/build-graph.mjs` (writes
+   `hq/src/data/graph.json`). Run `npm run build` in `hq/` only if a deployable build
+   is needed; the data files are what must stay fresh in git.
 6. Commit (`Aria standup YYYY-MM-DD`) **first**, then `git pull --rebase`, then push —
    rebase refuses to run over uncommitted changes. If push fails after retries, end the
    brief with a loud warning that memory did not persist.
