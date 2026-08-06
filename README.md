@@ -10,6 +10,7 @@ It's open-sourced as a **template**: fork it, swap in your own community/product
 |---|---|
 | `CLAUDE.md` | Project instructions Claude Code loads every session — routing rules ("always use the marketing-skills plugin") + project facts |
 | `.agents/product-marketing.md` | The single source of truth for positioning, audience, voice, key messages. Every marketing skill reads this before producing anything |
+| `.agents/customer-success/` + `.claude/agents/xenorita.md` | **Xenorita**, the club's AI customer success manager — a persistent agent persona that tracks every venue/sponsor/partner through a pipeline (`customers/*.md`), always knows the next follow-up, and improves her own `playbook.md` after every interaction |
 | `.claude/launch.json` | Dev-server configs so Claude can start the dashboard and video previews itself |
 | `dashboard/` | **Content Studio** — local Node dashboard (also deployable to Cloudflare Workers) for rating scraped outlier posts, managing your media library, and writing remix briefs |
 | `scripts/outlier-pipeline/` | Scrapes viral AI content from TikTok / Instagram / LinkedIn / Reddit via Apify, scores it (engagement vs. platform median × reach ratio), and feeds the dashboard |
