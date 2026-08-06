@@ -14,9 +14,11 @@ Routines across all employees are staggered ≥30 minutes apart to avoid git pus
 
 ## Standard end-of-routine protocol (every routine, no exceptions)
 
-1. Append today's `journal/YYYY-MM-DD.md` entry; update `insights.md` / `teachings.md`.
-2. `git pull --rebase` (resolve conflicts favoring the remote for files you don't own).
-3. Update **your own** `last_run` (ISO-8601 UTC) in `employees/_registry.json` — touch no
+1. Append today's `journal/YYYY-MM-DD.md` entry; update `insights.md` / `teachings.md`;
+   update **your own** `last_run` (ISO-8601 UTC) in `employees/_registry.json` — touch no
    other entry.
-4. Commit memory changes with message `<name>: <routine> — YYYY-MM-DD` and push.
-   If push is rejected, pull --rebase and push again (up to 4 attempts, backoff 2/4/8/16s).
+2. **Commit first** (`<name>: <routine> — YYYY-MM-DD`, own files only) — commit BEFORE
+   pulling; git refuses to rebase over uncommitted changes.
+3. `git pull --rebase` (resolve conflicts favoring the remote for entries/files you
+   don't own).
+4. Push. If rejected, pull --rebase and push again (up to 4 attempts, backoff 2/4/8/16s).
