@@ -264,6 +264,13 @@
   .sv-strip { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; }
   .sv-strip img { height: 84px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; opacity: 0.6; }
   .sv-strip img.cur { border-color: var(--accent); opacity: 1; }
+  .mem-layout { display: flex; gap: 16px; align-items: flex-start; }
+  #mem-list { width: 230px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+  #mem-list h3 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .6; }
+  #mem-list button { text-align: left; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: none; color: inherit; cursor: pointer; font: inherit; font-size: 13px; }
+  #mem-list button.cur { border-color: var(--accent); }
+  #mem-view { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+  #mem-view pre.mem-md { white-space: pre-wrap; font-size: 12.5px; line-height: 1.6; margin: 0; overflow-x: auto; }
 </style>
 </head>
 <body>
@@ -275,9 +282,22 @@
     <button data-tab="assets">My Photos &amp; Videos</button>
     <button data-tab="remixes">Remix Briefs</button>
     <button data-tab="library">Library</button>
+    <button data-tab="memory">Memory</button>
   </nav>
 </header>
 <main>
+
+  <!-- MEMORY (second brain) -->
+  <section id="tab-memory" class="tab">
+    <div class="toolbar">
+      <h2 style="margin:0;flex:1">🧠 Second brain</h2>
+      <span class="muted">repo <code>memory/</code> — state, daily logs, decisions, routines · updated daily by the memory routine</span>
+    </div>
+    <div class="mem-layout">
+      <aside id="mem-list"></aside>
+      <article id="mem-view"><span class="muted">Loading…</span></article>
+    </div>
+  </section>
 
   <!-- CALENDAR -->
   <section id="tab-calendar" class="tab active">
@@ -1031,8 +1051,37 @@ async function loadLibrary() {
   }));
 }
 
+// ---- Memory (second brain) ----
+const MEM_ORDER = ['state.md', 'decisions.md', 'routines.md', 'README.md'];
+let memCur = null;
+
+async function openMemFile(file) {
+  memCur = file;
+  document.querySelectorAll('#mem-list button').forEach(b => b.classList.toggle('cur', b.dataset.f === file));
+  const res = await fetch('/api/memory/file?f=' + encodeURIComponent(file));
+  const md = res.ok ? await res.text() : '⚠️ Could not load ' + file;
+  $('#mem-view').innerHTML = `<pre class="mem-md">${esc(md)}</pre>`;
+}
+
+async function loadMemory() {
+  const { files, logs } = await (await fetch('/api/memory')).json();
+  if (!files.length && !logs.length) {
+    $('#mem-list').innerHTML = '';
+    $('#mem-view').innerHTML = '<p class="muted">No second brain yet — the <code>memory/</code> directory is empty. It\'s created by the daily memory routine (see <code>memory/README.md</code> conventions once it lands).</p>';
+    return;
+  }
+  const core = files.slice().sort((a, b) =>
+    (MEM_ORDER.indexOf(a.file) + 1 || 99) - (MEM_ORDER.indexOf(b.file) + 1 || 99));
+  const item = (f, label) => `<button data-f="${esc(f.file)}">${esc(label || f.file)}</button>`;
+  $('#mem-list').innerHTML =
+    core.map(f => item(f)).join('') +
+    (logs.length ? '<h3>Daily log</h3>' + logs.map(l => item(l, l.file.replace('log/', '').replace('.md', ''))).join('') : '');
+  document.querySelectorAll('#mem-list button').forEach(b => b.addEventListener('click', () => openMemFile(b.dataset.f)));
+  await openMemFile(memCur && [...files, ...logs].some(f => f.file === memCur) ? memCur : (core[0] || logs[0]).file);
+}
+
 (async () => {
-  await Promise.all([loadAssets(), loadOutliers(), loadRemixes(), loadSchedule(), loadLibrary()]);
+  await Promise.all([loadAssets(), loadOutliers(), loadRemixes(), loadSchedule(), loadLibrary(), loadMemory()]);
   renderRemixes();
 })();
 </script>
