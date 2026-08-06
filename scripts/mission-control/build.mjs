@@ -78,6 +78,16 @@ const PARTS = [
       || p.startsWith('.agents/') || p.startsWith('.claude/'),
   },
   {
+    id: 'employees', stage: null, name: 'Employees', title: 'AI employees & memory', color: '#e1559b',
+    desc: 'The AI team’s registry, per-employee memory, and induction templates.',
+    match: p => p.startsWith('employees/'),
+  },
+  {
+    id: 'hq', stage: null, name: 'HQ', title: 'HQ dashboard', color: '#62e6e0',
+    desc: 'React app with the live second-brain graph, briefs, and standup view.',
+    match: p => p.startsWith('hq/'),
+  },
+  {
     id: 'ops', stage: null, name: 'Ops', title: 'Plans, rubrics & tooling', color: '#8a96a8',
     desc: 'Implementation plans, the remix audit rubric, this generator.',
     match: p => /^IMPLEMENTATION_PLAN.*\.md$/.test(p) || p === 'REMIX_AUDIT_RUBRIC.md'
