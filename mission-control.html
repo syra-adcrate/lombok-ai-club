@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control — Lombok AI Club</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b23; --panel-2: #1d242f; --border: #2a3341;
+    --text: #e8edf4; --muted: #8a96a8; --accent: #35c2a0; --accent-2: #f2b64c;
+    --radius: 12px;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: inherit; text-decoration: none; }
+  header {
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 18px 28px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: .2px; }
+  header h1 span { color: var(--accent); }
+  header .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  header input {
+    margin-left: auto; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 999px; color: var(--text); font-size: 13.5px; padding: 8px 16px; width: 260px;
+  }
+  header input:focus { outline: none; border-color: var(--accent); }
+  main { max-width: 1080px; margin: 0 auto; padding: 28px; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .strip a.cell { display: block; }
+  .cell {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; transition: border-color .15s;
+  }
+  a.cell:hover { border-color: var(--accent); }
+  .cell .k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .cell .v { font-family: var(--mono); font-size: 22px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .cell .v small { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .cell.total .v { color: var(--accent); }
+
+  .flow-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 30px 0 14px; }
+  .flow-label::after { content: ""; display: inline-block; vertical-align: middle; width: 120px; height: 1px; background: var(--border); margin-left: 12px; }
+
+  section.part {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 16px; overflow: hidden;
+  }
+  section.part[open] {}
+  .part-head {
+    display: flex; align-items: baseline; gap: 14px; padding: 16px 20px; cursor: pointer; list-style: none;
+  }
+  .part-head::-webkit-details-marker { display: none; }
+  .part-head .stage { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 700; }
+  .part-head .stage.aux { color: var(--accent-2); }
+  .part-head h2 { font-size: 15px; font-weight: 700; }
+  .part-head h2 small { color: var(--muted); font-weight: 600; margin-left: 8px; }
+  .part-head .stats { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .part-head .caret { color: var(--muted); font-size: 11px; transition: transform .15s; }
+  details[open] .part-head .caret { transform: rotate(90deg); }
+  .part-desc { padding: 0 20px 14px; color: var(--muted); font-size: 13px; max-width: 65ch; line-height: 1.5; }
+
+  .files { border-top: 1px solid var(--border); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+  td { padding: 7px 20px; border-top: 1px solid rgba(42,51,65,.5); white-space: nowrap; }
+  tr:first-child td { border-top: none; }
+  tr:hover td { background: var(--panel-2); }
+  td.path { width: 100%; }
+  td.path a:hover { color: var(--accent); }
+  td.grp { color: var(--accent-2); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding-top: 14px; }
+  td.size, td.date { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chip { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; border-radius: 5px; }
+  .chip.doc   { background: rgba(53,194,160,.14); color: var(--accent); }
+  .chip.code  { background: rgba(122,184,255,.14); color: #7ab8ff; }
+  .chip.data  { background: rgba(242,182,76,.14); color: var(--accent-2); }
+  .chip.html  { background: rgba(224,96,79,.14); color: #e0604f; }
+  .chip.media { background: rgba(179,157,219,.14); color: #b39ddb; }
+  .chip.other { background: var(--panel-2); color: var(--muted); }
+
+  .hidden { display: none !important; }
+  footer { padding: 18px 28px 40px; text-align: center; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Lombok AI Club <span>&#47;&#47;</span> Mission Control</h1>
+    <span class="meta">second-brain aggregator &middot; 121 files &middot; 77.1 MB</span>
+    <input id="q" type="search" placeholder="Filter files&hellip;" autocomplete="off">
+  </header>
+  <main>
+    <div class="strip">
+      <div class="cell total"><div class="k">Workspace</div><div class="v">121<small>files</small></div></div>
+      <a class="cell" href="#intake"><div class="k">01 · Intake</div><div class="v">10<small>files</small></div></a><a class="cell" href="#curation"><div class="k">02 · Curation</div><div class="v">14<small>files</small></div></a><a class="cell" href="#synthesis"><div class="k">03 · Synthesis</div><div class="v">3<small>files</small></div></a><a class="cell" href="#production"><div class="k">04 · Production</div><div class="v">84<small>files</small></div></a><a class="cell" href="#memory"><div class="k">Memory</div><div class="v">6<small>files</small></div></a><a class="cell" href="#ops"><div class="k">Ops</div><div class="v">4<small>files</small></div></a>
+    </div>
+    <div class="flow-label">The content flow</div>
+    <details class="part" id="intake" open>
+    <summary class="part-head">
+      <span class="stage">01</span>
+      <h2>Intake<small>Outlier pipeline</small></h2>
+      <span class="stats">10 files · 525 KB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">Scrapes viral AI content from TikTok / Instagram / LinkedIn / Reddit via Apify, scores it against platform medians, and feeds the studio.</p>
+    <div class="files"><table><tr data-path="scripts/outlier-pipeline/ads.config.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/ads.config.json" target="_blank" rel="noopener">scripts/outlier-pipeline/ads.config.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/ads.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/ads.json" target="_blank" rel="noopener">scripts/outlier-pipeline/ads.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">114 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/build.mjs">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/build.mjs" target="_blank" rel="noopener">scripts/outlier-pipeline/build.mjs</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">641 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/content.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/content.json" target="_blank" rel="noopener">scripts/outlier-pipeline/content.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">191 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/dashboard-template.html">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/dashboard-template.html" target="_blank" rel="noopener">scripts/outlier-pipeline/dashboard-template.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">14 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/normalize-ads.mjs">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/normalize-ads.mjs" target="_blank" rel="noopener">scripts/outlier-pipeline/normalize-ads.mjs</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/normalize.mjs">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/normalize.mjs" target="_blank" rel="noopener">scripts/outlier-pipeline/normalize.mjs</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">5 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/outlier-radar.html">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/outlier-radar.html" target="_blank" rel="noopener">scripts/outlier-pipeline/outlier-radar.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">189 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/readme.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/README.md" target="_blank" rel="noopener">scripts/outlier-pipeline/README.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/outlier-pipeline/to-studio.mjs">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/to-studio.mjs" target="_blank" rel="noopener">scripts/outlier-pipeline/to-studio.mjs</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr></table></div>
+  </details><details class="part" id="curation" open>
+    <summary class="part-head">
+      <span class="stage">02</span>
+      <h2>Curation<small>Content Studio dashboard</small></h2>
+      <span class="stats">14 files · 691 KB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">Local Node dashboard (Cloudflare-deployable) for rating scraped outliers, managing the media library, and writing remix briefs.</p>
+    <div class="files"><table><tr data-path="dashboard/data/assets.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/assets.json" target="_blank" rel="noopener">dashboard/data/assets.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/data/outliers.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/outliers.json" target="_blank" rel="noopener">dashboard/data/outliers.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">322 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/data/remixes.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/remixes.json" target="_blank" rel="noopener">dashboard/data/remixes.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">5 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/data/schedule.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/schedule.json" target="_blank" rel="noopener">dashboard/data/schedule.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">931 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/package-lock.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/package-lock.json" target="_blank" rel="noopener">dashboard/package-lock.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">83 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/package.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/package.json" target="_blank" rel="noopener">dashboard/package.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">582 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/public/index.html">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/public/index.html" target="_blank" rel="noopener">dashboard/public/index.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">51 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/readme.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/README.md" target="_blank" rel="noopener">dashboard/README.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/schema.sql">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/schema.sql" target="_blank" rel="noopener">dashboard/schema.sql</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">90 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/scripts/make-seed-sql.js">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/scripts/make-seed-sql.js" target="_blank" rel="noopener">dashboard/scripts/make-seed-sql.js</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">1 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/seed.sql">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/seed.sql" target="_blank" rel="noopener">dashboard/seed.sql</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">188 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/server.js">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/server.js" target="_blank" rel="noopener">dashboard/server.js</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">19 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/src/worker.js">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/src/worker.js" target="_blank" rel="noopener">dashboard/src/worker.js</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">15 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="dashboard/wrangler.jsonc">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/wrangler.jsonc" target="_blank" rel="noopener">dashboard/wrangler.jsonc</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">582 B</td>
+    <td class="date">Jul 23</td></tr></table></div>
+  </details><details class="part" id="synthesis" open>
+    <summary class="part-head">
+      <span class="stage">03</span>
+      <h2>Synthesis<small>Remix briefs</small></h2>
+      <span class="stats">3 files · 30 KB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">Outlier post → hook → shot plan, adapted to the club’s audience. The bridge between scraped inspiration and produced content.</p>
+    <div class="files"><table><tr data-path="remixes/batch-01-first-meetup.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-01-first-meetup.md" target="_blank" rel="noopener">REMIXES/batch-01-first-meetup.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="remixes/batch-02-english-market.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-02-english-market.md" target="_blank" rel="noopener">REMIXES/batch-02-english-market.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="remixes/batch-03-outlier-remixes.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-03-outlier-remixes.md" target="_blank" rel="noopener">REMIXES/batch-03-outlier-remixes.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">13 KB</td>
+    <td class="date">Jul 23</td></tr></table></div>
+  </details><details class="part" id="production" open>
+    <summary class="part-head">
+      <span class="stage">04</span>
+      <h2>Production<small>Video projects</small></h2>
+      <span class="stats">84 files · 75.9 MB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">HyperFrames projects — programmatic HTML compositions rendered to MP4 reels and slideshows.</p>
+    <div class="files"><table><tr data-grp="5-ai-tools-slideshow"><td class="grp" colspan="4">5-ai-tools-slideshow · 23 files</td></tr><tr data-path="videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23t03-29-56-931z-aw5kzxguahrtba" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA</a></td>
+    <td><span class="chip other">other</span></td>
+    <td class="size">18 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/.media/preferences.json" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/.media/preferences.json" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/.media/preferences.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">872 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/agents.md" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/AGENTS.md" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/AGENTS.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/cafe-a.jpg" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/cafe-a.jpg" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/cafe-a.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">121 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/cafe-b.jpg" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/cafe-b.jpg" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/cafe-b.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">132 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">10 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/assets/meetup.jpg" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/meetup.jpg" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/assets/meetup.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">32 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/brief.md" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/BRIEF.md" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/BRIEF.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/claude.md" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/CLAUDE.md" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/CLAUDE.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/hyperframes.json" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/hyperframes.json" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/hyperframes.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">318 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/index.html" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/index.html" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/index.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">15 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/meta.json" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/meta.json" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/meta.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">111 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/package.json" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/package.json" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/package.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">305 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">11.2 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">11.1 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">222 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.4 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.1 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.2 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/5-ai-tools-slideshow/storyboard.md" data-ingrp="5-ai-tools-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/STORYBOARD.md" target="_blank" rel="noopener">videos/5-ai-tools-slideshow/STORYBOARD.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-grp="ai-escape-news-slideshow"><td class="grp" colspan="4">ai-escape-news-slideshow · 21 files</td></tr><tr data-path="videos/ai-escape-news-slideshow/agents.md" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/AGENTS.md" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/AGENTS.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/cafe-a.jpg" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/cafe-a.jpg" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/cafe-a.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">121 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/cafe-b.jpg" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/cafe-b.jpg" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/cafe-b.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">132 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">10 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/assets/meetup.jpg" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/meetup.jpg" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/assets/meetup.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">32 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/brief.md" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/BRIEF.md" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/BRIEF.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/claude.md" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/CLAUDE.md" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/CLAUDE.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/hyperframes.json" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/hyperframes.json" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/hyperframes.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">318 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/index.html" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/index.html" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/index.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">15 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/meta.json" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/meta.json" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/meta.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">119 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/package.json" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/package.json" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/package.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">309 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">9.2 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">345 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.4 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.4 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.4 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.2 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-escape-news-slideshow/storyboard.md" data-ingrp="ai-escape-news-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/STORYBOARD.md" target="_blank" rel="noopener">videos/ai-escape-news-slideshow/STORYBOARD.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-grp="ai-tools-reel"><td class="grp" colspan="4">ai-tools-reel · 21 files</td></tr><tr data-path="videos/ai-tools-reel/.media/preferences.json" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/.media/preferences.json" target="_blank" rel="noopener">videos/ai-tools-reel/.media/preferences.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">517 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/agents.md" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/AGENTS.md" target="_blank" rel="noopener">videos/ai-tools-reel/AGENTS.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/brief.md" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/BRIEF.md" target="_blank" rel="noopener">videos/ai-tools-reel/BRIEF.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/claude.md" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/CLAUDE.md" target="_blank" rel="noopener">videos/ai-tools-reel/CLAUDE.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/compositions/cta.html" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/cta.html" target="_blank" rel="noopener">videos/ai-tools-reel/compositions/cta.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/compositions/hook.html" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/hook.html" target="_blank" rel="noopener">videos/ai-tools-reel/compositions/hook.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/compositions/tools.html" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/tools.html" target="_blank" rel="noopener">videos/ai-tools-reel/compositions/tools.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/hyperframes.json" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/hyperframes.json" target="_blank" rel="noopener">videos/ai-tools-reel/hyperframes.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">318 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/index.html" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/index.html" target="_blank" rel="noopener">videos/ai-tools-reel/index.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/meta.json" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/meta.json" target="_blank" rel="noopener">videos/ai-tools-reel/meta.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">97 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/package.json" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/package.json" target="_blank" rel="noopener">videos/ai-tools-reel/package.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">298 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/posting.md" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/POSTING.md" target="_blank" rel="noopener">videos/ai-tools-reel/POSTING.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">1 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4" target="_blank" rel="noopener">videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.9 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/contact-sheet.jpg" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/contact-sheet.jpg" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/contact-sheet.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">257 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-00-at-3s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-00-at-3s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-00-at-3s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">157 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">173 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">198 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">194 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-04-at-28s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-04-at-28s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-04-at-28s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">271 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png" target="_blank" rel="noopener">videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">257 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-tools-reel/storyboard.md" data-ingrp="ai-tools-reel">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/STORYBOARD.md" target="_blank" rel="noopener">videos/ai-tools-reel/STORYBOARD.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-grp="ai-writing-fix-slideshow"><td class="grp" colspan="4">ai-writing-fix-slideshow · 19 files</td></tr><tr data-path="videos/ai-writing-fix-slideshow/agents.md" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/AGENTS.md" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/AGENTS.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/assets/cafe-a.jpg" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/cafe-a.jpg" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/assets/cafe-a.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">121 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/assets/cafe-b.jpg" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/cafe-b.jpg" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/assets/cafe-b.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">132 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/assets/meetup.jpg" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/meetup.jpg" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/assets/meetup.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">32 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/brief.md" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/BRIEF.md" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/BRIEF.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">2 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/claude.md" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/CLAUDE.md" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/CLAUDE.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">7 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/hyperframes.json" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/hyperframes.json" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/hyperframes.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">318 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/index.html" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/index.html" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/index.html</a></td>
+    <td><span class="chip html">html</span></td>
+    <td class="size">20 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/meta.json" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/meta.json" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/meta.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">119 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/package.json" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/package.json" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/package.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">309 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">415 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.5 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.4 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png</a></td>
+    <td><span class="chip media">media</span></td>
+    <td class="size">2.2 MB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="videos/ai-writing-fix-slideshow/storyboard.md" data-ingrp="ai-writing-fix-slideshow">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/STORYBOARD.md" target="_blank" rel="noopener">videos/ai-writing-fix-slideshow/STORYBOARD.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr></table></div>
+  </details>
+    <div class="flow-label">Always loaded</div>
+    <details class="part" id="memory" open>
+    <summary class="part-head">
+      <span class="stage aux">&#9679;</span>
+      <h2>Memory<small>Context &amp; instructions</small></h2>
+      <span class="stats">6 files · 19 KB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">What Claude loads every session: routing rules, positioning, voice, dev-server configs. The single source of truth the other parts read.</p>
+    <div class="files"><table><tr data-path=".agents/product-marketing.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/product-marketing.md" target="_blank" rel="noopener">.agents/product-marketing.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">10 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path=".claude/launch.json">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/.claude/launch.json" target="_blank" rel="noopener">.claude/launch.json</a></td>
+    <td><span class="chip data">data</span></td>
+    <td class="size">896 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path=".gitignore">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/.gitignore" target="_blank" rel="noopener">.gitignore</a></td>
+    <td><span class="chip other">other</span></td>
+    <td class="size">425 B</td>
+    <td class="date">Jul 23</td></tr><tr data-path="claude.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">1 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="license">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a></td>
+    <td><span class="chip other">other</span></td>
+    <td class="size">1 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="readme.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/README.md" target="_blank" rel="noopener">README.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">5 KB</td>
+    <td class="date">Jul 23</td></tr></table></div>
+  </details><details class="part" id="ops" open>
+    <summary class="part-head">
+      <span class="stage aux">&#9679;</span>
+      <h2>Ops<small>Plans, rubrics &amp; tooling</small></h2>
+      <span class="stats">4 files · 38 KB</span>
+      <span class="caret">&#9654;</span>
+    </summary>
+    <p class="part-desc">Working implementation plans, the rubric used to audit remix quality, and this mission-control generator.</p>
+    <div class="files"><table><tr data-path="implementation_plan_ads.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/IMPLEMENTATION_PLAN_ADS.md" target="_blank" rel="noopener">IMPLEMENTATION_PLAN_ADS.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">12 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="implementation_plan.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/IMPLEMENTATION_PLAN.md" target="_blank" rel="noopener">IMPLEMENTATION_PLAN.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">9 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="remix_audit_rubric.md">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIX_AUDIT_RUBRIC.md" target="_blank" rel="noopener">REMIX_AUDIT_RUBRIC.md</a></td>
+    <td><span class="chip doc">doc</span></td>
+    <td class="size">3 KB</td>
+    <td class="date">Jul 23</td></tr><tr data-path="scripts/mission-control/build.mjs">
+    <td class="path"><a href="https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/mission-control/build.mjs" target="_blank" rel="noopener">scripts/mission-control/build.mjs</a></td>
+    <td><span class="chip code">code</span></td>
+    <td class="size">14 KB</td>
+    <td class="date">Aug 6</td></tr></table></div>
+  </details>
+  </main>
+  <footer>generated by scripts/mission-control/build.mjs &middot; branch claude/second-brain-mission-control-kbaxg7 &middot; 2026-08-06</footer>
+  <script>
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const term = q.value.trim().toLowerCase();
+    document.querySelectorAll('tr[data-path]').forEach(tr => {
+      tr.classList.toggle('hidden', !!term && !tr.dataset.path.includes(term));
+    });
+    document.querySelectorAll('section.part').forEach(sec => {
+      const any = sec.querySelector('tr[data-path]:not(.hidden)');
+      sec.classList.toggle('hidden', !!term && !any);
+      if (term && any) sec.setAttribute('open', '');
+    });
+    document.querySelectorAll('tr[data-grp]').forEach(tr => {
+      const g = tr.dataset.grp;
+      const any = document.querySelector('tr[data-path][data-ingrp="' + g + '"]:not(.hidden)');
+      tr.classList.toggle('hidden', !!term && !any);
+    });
+  });
+</script>
+</body>
+</html>
