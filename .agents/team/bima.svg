@@ -1,0 +1,122 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9C4"/>
+      <stop offset="0.6" stop-color="#FFC79A"/>
+      <stop offset="1" stop-color="#FFA97E"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2B23E"/>
+      <stop offset="1" stop-color="#D99A26"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="512" cy="470" r="360" fill="#FFF6DF" opacity="0.55"/>
+  <circle cx="512" cy="470" r="280" fill="#FFF9EA" opacity="0.45"/>
+
+  <!-- circuit constellation, left -->
+  <g stroke="#FFFFFF" stroke-width="3" opacity="0.55" fill="none">
+    <path d="M96,180 L176,180 L216,220"/>
+    <path d="M176,180 L176,110"/>
+    <path d="M120,300 L190,300 L230,260"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.75">
+    <circle cx="96" cy="180" r="8"/><circle cx="216" cy="220" r="8"/>
+    <circle cx="176" cy="110" r="8"/><circle cx="120" cy="300" r="8"/>
+    <circle cx="230" cy="260" r="8"/>
+  </g>
+  <!-- circuit constellation, right -->
+  <g stroke="#FFFFFF" stroke-width="3" opacity="0.55" fill="none">
+    <path d="M928,150 L848,150 L808,190"/>
+    <path d="M848,150 L848,90"/>
+    <path d="M900,280 L830,280 L795,245"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.75">
+    <circle cx="928" cy="150" r="8"/><circle cx="808" cy="190" r="8"/>
+    <circle cx="848" cy="90" r="8"/><circle cx="900" cy="280" r="8"/>
+    <circle cx="795" cy="245" r="8"/>
+  </g>
+
+  <!-- palm fronds bottom corners -->
+  <g fill="#0F6E66" opacity="0.9">
+    <path d="M-20,1024 C60,900 90,860 200,830 C120,880 100,930 80,1024 Z"/>
+    <path d="M-20,980 C80,940 140,940 230,970 C140,975 70,995 10,1024 L-20,1024 Z"/>
+    <path d="M-20,860 C30,800 45,740 40,660 C75,750 70,830 30,900 Z"/>
+  </g>
+  <g fill="#0F6E66" opacity="0.9">
+    <path d="M1044,1024 C964,900 934,860 824,830 C904,880 924,930 944,1024 Z"/>
+    <path d="M1044,980 C944,940 884,940 794,970 C884,975 954,995 1014,1024 L1044,1024 Z"/>
+    <path d="M1044,860 C994,800 979,740 984,660 C949,750 954,830 994,900 Z"/>
+  </g>
+
+  <!-- shoulders / shirt -->
+  <path d="M196,1024 C204,878 296,806 400,782 C452,770 468,762 476,738 L548,738 C556,762 572,770 624,782 C728,806 820,878 828,1024 Z" fill="url(#shirt)"/>
+  <!-- camp collar -->
+  <path d="M476,738 L512,812 L548,738" fill="none" stroke="#8A5F10" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- neck -->
+  <path d="M462,616 L462,756 C462,780 562,780 562,756 L562,616 Z" fill="#A96C38"/>
+  <ellipse cx="512" cy="628" rx="50" ry="20" fill="#93591F"/>
+
+  <!-- face: wider jaw -->
+  <path d="M512,296 C614,296 668,368 668,470 C668,574 606,650 512,650 C418,650 356,574 356,470 C356,368 410,296 512,296 Z" fill="#B87A45"/>
+
+  <!-- ears -->
+  <circle cx="360" cy="482" r="27" fill="#B87A45"/>
+  <circle cx="664" cy="482" r="27" fill="#B87A45"/>
+
+  <!-- short hair hugging the skull -->
+  <path d="M356,470 C344,296 418,240 512,240 C606,240 680,296 668,470
+           C660,420 640,378 596,366 C556,354 468,354 428,366
+           C384,378 364,420 356,470 Z" fill="#20120C"/>
+  <!-- sideburns -->
+  <path d="M356,440 L386,440 L382,510 L360,504 Z" fill="#20120C"/>
+  <path d="M668,440 L638,440 L642,510 L664,504 Z" fill="#20120C"/>
+
+  <!-- headphones -->
+  <path d="M366,360 C382,206 642,206 658,360" stroke="#23313A" stroke-width="24" fill="none" stroke-linecap="round"/>
+  <rect x="330" y="428" width="60" height="104" rx="28" fill="#23313A"/>
+  <rect x="344" y="448" width="32" height="64" rx="16" fill="#12857E"/>
+  <rect x="634" y="428" width="60" height="104" rx="28" fill="#23313A"/>
+  <rect x="648" y="448" width="32" height="64" rx="16" fill="#12857E"/>
+
+  <!-- sparkles -->
+  <g fill="#FFFFFF" opacity="0.9">
+    <path d="M660,130 l6,16 16,6 -16,6 -6,16 -6,-16 -16,-6 16,-6 Z"/>
+    <path d="M368,104 l5,13 13,5 -13,5 -5,13 -5,-13 -13,-5 13,-5 Z"/>
+  </g>
+
+  <!-- thick brows -->
+  <path d="M408,426 C430,410 464,408 484,420" stroke="#20120C" stroke-width="15" fill="none" stroke-linecap="round"/>
+  <path d="M540,420 C560,408 594,410 616,426" stroke="#20120C" stroke-width="15" fill="none" stroke-linecap="round"/>
+
+  <!-- eyes -->
+  <g>
+    <path d="M420,468 C432,450 464,450 476,468 C464,482 432,482 420,468 Z" fill="#FFFFFF"/>
+    <circle cx="448" cy="466" r="13" fill="#3E2413"/>
+    <circle cx="448" cy="466" r="6" fill="#1A0C04"/>
+    <circle cx="452" cy="461" r="3" fill="#FFFFFF"/>
+    <path d="M420,466 C432,449 464,449 476,466" stroke="#20120C" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+  <g>
+    <path d="M548,468 C560,450 592,450 604,468 C592,482 560,482 548,468 Z" fill="#FFFFFF"/>
+    <circle cx="576" cy="466" r="13" fill="#3E2413"/>
+    <circle cx="576" cy="466" r="6" fill="#1A0C04"/>
+    <circle cx="580" cy="461" r="3" fill="#FFFFFF"/>
+    <path d="M548,466 C560,449 592,449 604,466" stroke="#20120C" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- nose -->
+  <path d="M508,498 C500,518 500,526 512,530" stroke="#93591F" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- grin -->
+  <path d="M458,556 C478,602 546,602 566,556 C546,568 478,568 458,556 Z" fill="#5C241A"/>
+  <path d="M466,558 C496,567 528,567 558,558 C544,574 480,574 466,558 Z" fill="#FFFFFF"/>
+
+  <!-- name badge -->
+  <rect x="252" y="856" width="520" height="112" rx="56" fill="#FFFFFF" opacity="0.95"/>
+  <text x="512" y="910" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="42" fill="#0E6E66" letter-spacing="6">BIMA</text>
+  <text x="512" y="946" text-anchor="middle" font-family="'Space Mono', monospace" font-weight="700" font-size="19" fill="#E2543E" letter-spacing="2">VIDEO PRODUCER · LOMBOK AI CLUB</text>
+</svg>

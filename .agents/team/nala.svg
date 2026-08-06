@@ -1,0 +1,139 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9C4"/>
+      <stop offset="0.6" stop-color="#FFC79A"/>
+      <stop offset="1" stop-color="#FFA97E"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6C5CE7"/>
+      <stop offset="1" stop-color="#4C3FB8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="512" cy="470" r="360" fill="#FFF6DF" opacity="0.55"/>
+  <circle cx="512" cy="470" r="280" fill="#FFF9EA" opacity="0.45"/>
+
+  <!-- circuit constellation, left -->
+  <g stroke="#FFFFFF" stroke-width="3" opacity="0.55" fill="none">
+    <path d="M96,180 L176,180 L216,220"/>
+    <path d="M176,180 L176,110"/>
+    <path d="M120,300 L190,300 L230,260"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.75">
+    <circle cx="96" cy="180" r="8"/><circle cx="216" cy="220" r="8"/>
+    <circle cx="176" cy="110" r="8"/><circle cx="120" cy="300" r="8"/>
+    <circle cx="230" cy="260" r="8"/>
+  </g>
+  <!-- circuit constellation, right -->
+  <g stroke="#FFFFFF" stroke-width="3" opacity="0.55" fill="none">
+    <path d="M928,150 L848,150 L808,190"/>
+    <path d="M848,150 L848,90"/>
+    <path d="M900,280 L830,280 L795,245"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.75">
+    <circle cx="928" cy="150" r="8"/><circle cx="808" cy="190" r="8"/>
+    <circle cx="848" cy="90" r="8"/><circle cx="900" cy="280" r="8"/>
+    <circle cx="795" cy="245" r="8"/>
+  </g>
+
+  <!-- palm fronds bottom corners -->
+  <g fill="#0F6E66" opacity="0.9">
+    <path d="M-20,1024 C60,900 90,860 200,830 C120,880 100,930 80,1024 Z"/>
+    <path d="M-20,980 C80,940 140,940 230,970 C140,975 70,995 10,1024 L-20,1024 Z"/>
+    <path d="M-20,860 C30,800 45,740 40,660 C75,750 70,830 30,900 Z"/>
+  </g>
+  <g fill="#0F6E66" opacity="0.9">
+    <path d="M1044,1024 C964,900 934,860 824,830 C904,880 924,930 944,1024 Z"/>
+    <path d="M1044,980 C944,940 884,940 794,970 C884,975 954,995 1014,1024 L1044,1024 Z"/>
+    <path d="M1044,860 C994,800 979,740 984,660 C949,750 954,830 994,900 Z"/>
+  </g>
+
+  <!-- bob: back hair to the jaw -->
+  <g fill="#251610">
+    <ellipse cx="512" cy="400" rx="236" ry="254"/>
+    <rect x="286" y="380" width="118" height="252" rx="59"/>
+    <rect x="620" y="380" width="118" height="252" rx="59"/>
+  </g>
+
+  <!-- shoulders / shirt -->
+  <path d="M206,1024 C214,884 300,812 402,788 C452,776 470,768 478,742 L546,742 C554,768 574,776 622,788 C724,812 810,884 818,1024 Z" fill="url(#shirt)"/>
+  <g fill="#FFFFFF" opacity="0.5">
+    <circle cx="330" cy="930" r="7"/><circle cx="395" cy="990" r="7"/>
+    <circle cx="452" cy="905" r="7"/><circle cx="560" cy="915" r="7"/>
+    <circle cx="628" cy="985" r="7"/><circle cx="690" cy="920" r="7"/>
+    <circle cx="300" cy="1000" r="7"/><circle cx="735" cy="1000" r="7"/>
+  </g>
+  <path d="M478,742 L512,810 L546,742" fill="none" stroke="#FFF6DF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- neck -->
+  <path d="M470,620 L470,760 C470,782 554,782 554,760 L554,620 Z" fill="#B87A4C"/>
+  <ellipse cx="512" cy="632" rx="46" ry="20" fill="#A2683C"/>
+
+  <!-- face -->
+  <path d="M512,300 C610,300 662,370 662,470 C662,570 600,644 512,644 C424,644 362,570 362,470 C362,370 414,300 512,300 Z" fill="#C98A5B"/>
+
+  <!-- ears + triangle studs -->
+  <circle cx="366" cy="480" r="26" fill="#C98A5B"/>
+  <circle cx="658" cy="480" r="26" fill="#C98A5B"/>
+  <path d="M358,502 l16,0 -8,16 Z" fill="#FF7A59"/>
+  <path d="M650,502 l16,0 -8,16 Z" fill="#FF7A59"/>
+
+  <!-- full straight bangs -->
+  <path d="M362,478 C348,318 418,254 512,254 C606,254 676,318 662,478
+           C660,430 650,408 634,404 C560,392 464,392 390,404
+           C374,408 364,430 362,478 Z" fill="#251610"/>
+
+  <!-- sparkles -->
+  <g fill="#FFFFFF" opacity="0.9">
+    <path d="M648,128 l6,16 16,6 -16,6 -6,16 -6,-16 -16,-6 16,-6 Z"/>
+    <path d="M376,100 l5,13 13,5 -13,5 -5,13 -5,-13 -13,-5 13,-5 Z"/>
+  </g>
+
+  <!-- brows (peek under bangs) -->
+  <path d="M418,432 C434,422 462,420 478,428" stroke="#251610" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M546,428 C562,420 590,422 606,432" stroke="#251610" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+  <!-- eyes -->
+  <g>
+    <path d="M420,468 C432,450 464,450 476,468 C464,482 432,482 420,468 Z" fill="#FFFFFF"/>
+    <circle cx="448" cy="466" r="13" fill="#4A2C1A"/>
+    <circle cx="448" cy="466" r="6" fill="#1E0F06"/>
+    <circle cx="452" cy="461" r="3" fill="#FFFFFF"/>
+    <path d="M420,466 C432,449 464,449 476,466" stroke="#251610" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+  <g>
+    <path d="M548,468 C560,450 592,450 604,468 C592,482 560,482 548,468 Z" fill="#FFFFFF"/>
+    <circle cx="576" cy="466" r="13" fill="#4A2C1A"/>
+    <circle cx="576" cy="466" r="6" fill="#1E0F06"/>
+    <circle cx="580" cy="461" r="3" fill="#FFFFFF"/>
+    <path d="M548,466 C560,449 592,449 604,466" stroke="#251610" stroke-width="6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- round glasses -->
+  <g fill="none" stroke="#173A36" stroke-width="7">
+    <circle cx="448" cy="468" r="46"/>
+    <circle cx="576" cy="468" r="46"/>
+    <path d="M494,462 C504,454 520,454 530,462"/>
+    <path d="M402,462 L366,452"/>
+    <path d="M622,462 L658,452"/>
+  </g>
+
+  <!-- nose -->
+  <path d="M508,500 C502,516 502,524 512,528" stroke="#A2683C" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+  <!-- smile -->
+  <path d="M466,558 C484,598 540,598 558,558 C540,568 484,568 466,558 Z" fill="#6E2B1F"/>
+  <path d="M474,560 C500,567 524,567 550,560 C537,573 487,573 474,560 Z" fill="#FFFFFF"/>
+
+  <!-- blush -->
+  <ellipse cx="412" cy="530" rx="22" ry="12" fill="#FF9C7A" opacity="0.45"/>
+  <ellipse cx="612" cy="530" rx="22" ry="12" fill="#FF9C7A" opacity="0.45"/>
+
+  <!-- name badge -->
+  <rect x="252" y="856" width="520" height="112" rx="56" fill="#FFFFFF" opacity="0.95"/>
+  <text x="512" y="910" text-anchor="middle" font-family="'Archivo Black', sans-serif" font-size="42" fill="#0E6E66" letter-spacing="6">NALA</text>
+  <text x="512" y="946" text-anchor="middle" font-family="'Space Mono', monospace" font-weight="700" font-size="19" fill="#E2543E" letter-spacing="2">OUTLIER ANALYST · LOMBOK AI CLUB</text>
+</svg>

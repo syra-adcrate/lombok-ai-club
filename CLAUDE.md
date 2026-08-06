@@ -24,6 +24,9 @@ persona defined in `.claude/agents/xenorita.md`, portrait at
 - This is separate from marketing: `.agents/product-marketing.md` stays the
   positioning source of truth (marketing-skills plugin only); Xenorita reads
   it but never edits it.
+- The full AI team roster (Xenorita plus the Rinjani/Bima/Nala personas and
+  their portraits) lives in `.agents/TEAM.md`. Only Xenorita is a full agent;
+  the others are named faces on existing workflows and change no routing rules.
 
 ## Project facts
 
