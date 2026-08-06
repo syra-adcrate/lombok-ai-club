@@ -15,3 +15,7 @@
      Format:
      - [open | 2026-08-06 | INFERENCE] Sponsor interest may be seasonal — worth asking X.
 -->
+
+- [open | 2026-08-06 | FACT] Self-check test insight (fake data): memory scaffolding
+  verified readable end-to-end on first routine run — profile.md, long-term.md, journal/,
+  insights.md, teachings.md all present and well-formed.
