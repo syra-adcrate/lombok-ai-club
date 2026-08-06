@@ -1,4 +1,6 @@
 {
+  "version": 1,
+  "timezone_note": "All cron_utc values are UTC. Local reference time is Lombok (WITA, UTC+8). last_run is an ISO-8601 UTC timestamp updated at the end of every routine run.",
   "employees": [
     {
       "name": "aria",
