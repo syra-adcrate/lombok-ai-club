@@ -418,6 +418,37 @@ app.get('/api/library/batch/:file', (req, res) => {
   }
 });
 
+// ---- Memory (second brain: memory/*.md, maintained by the daily routine) ----
+const MEMORY_DIR = path.join(__dirname, '../memory');
+
+app.get('/api/memory', (req, res) => {
+  const readDir = (dir, prefix) => {
+    const out = [];
+    try {
+      for (const f of fs.readdirSync(dir)) {
+        if (!f.endsWith('.md')) continue;
+        const st = fs.statSync(path.join(dir, f));
+        out.push({ file: prefix + f, updatedAt: st.mtime.toISOString() });
+      }
+    } catch {}
+    return out;
+  };
+  const files = readDir(MEMORY_DIR, '');
+  const logs = readDir(path.join(MEMORY_DIR, 'log'), 'log/')
+    .sort((a, b) => b.file.localeCompare(a.file));
+  res.json({ files, logs });
+});
+
+app.get('/api/memory/file', (req, res) => {
+  const f = String(req.query.f || '');
+  if (!/^(log\/)?[\w.-]+\.md$/.test(f)) return res.status(400).json({ error: 'bad filename' });
+  try {
+    res.type('text/plain').send(fs.readFileSync(path.join(MEMORY_DIR, f), 'utf8'));
+  } catch {
+    res.status(404).json({ error: 'not found' });
+  }
+});
+
 // ---- Render (runs `npm run render` inside a videos/<name> project) ----
 const { spawn } = require('child_process');
 const renderJobs = {};
