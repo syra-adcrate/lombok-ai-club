@@ -1,5 +1,10 @@
 # AI Employees — Implementation Plan
 
+> **MOVED (2026-08-06):** the AI-employee system — `employees/` memory tree, agent
+> definitions, the hire/standup/memory-distill skills, and the `hq/` dashboard app —
+> now lives in **`syra-adcrate/second-brain`**. This copy of the plan stays for
+> reference; all further work happens there.
+
 _Drafted 2026-08-06. Goal: a team of named AI employees, each with its own memory, skills, and
 scheduled routines — connected to email and calendar, self-updating, with an Obsidian-style
 graph dashboard and a daily "what matters today" brief. New employees can be hired on demand
