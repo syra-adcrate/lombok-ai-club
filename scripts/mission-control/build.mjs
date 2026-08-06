@@ -25,7 +25,7 @@ function walk(dir, acc = []) {
     if (st.isDirectory()) walk(full, acc);
     else {
       const rel = relative(ROOT, full);
-      if (rel === 'mission-control.html') continue;
+      if (rel === 'mission-control.html' || rel === 'dashboard/public/second-brain.html') continue;
       acc.push({ path: rel, size: st.size, mtime: st.mtimeMs / 1000 });
     }
   }
@@ -741,7 +741,7 @@ function renderBody(model) {
 
 const model = build();
 const body = renderBody(model);
-writeFileSync(OUT, `<!DOCTYPE html>
+const page = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -752,7 +752,10 @@ writeFileSync(OUT, `<!DOCTYPE html>
 <body>${body}
 </body>
 </html>
-`);
+`;
+writeFileSync(OUT, page);
+// same page inside the Content Studio, served as the "Second Brain" tab's iframe
+writeFileSync(join(ROOT, 'dashboard', 'public', 'second-brain.html'), page);
 const refs = model.edges.filter(e => e.kind === 'ref');
 console.log(`wrote mission-control.html — ${model.nodes.length} nodes, ${model.edges.length} edges (${refs.length} cross-links)`);
 for (const e of refs) console.log(`  ref: ${e.s} → ${e.t}`);
