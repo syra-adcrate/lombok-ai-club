@@ -528,6 +528,88 @@ app.post('/api/library/:name/upload', (req, res) => {
   }
 });
 
+// ---- Second Brain (AI team + Xenorita's customer pipeline) ----
+const AGENTS_DIR = path.join(__dirname, '../.agents');
+const CUSTOMERS_DIR = path.join(AGENTS_DIR, 'customer-success', 'customers');
+app.use('/brain-files', express.static(AGENTS_DIR));
+
+const TEAM = [
+  {
+    id: 'xenorita', name: 'Xenorita', pronouns: 'she/her', kind: 'agent',
+    role: 'Customer Success Manager',
+    portrait: '/brain-files/customer-success/xenorita.png',
+    owns: 'Customer pipeline, follow-ups, and her self-improving playbook',
+    definedBy: '.claude/agents/xenorita.md',
+  },
+  {
+    id: 'rinjani', name: 'Rinjani', pronouns: 'she/her', kind: 'persona',
+    role: 'Content & Social Manager',
+    portrait: '/brain-files/team/rinjani.png',
+    owns: 'Social posts, captions, copy — via the marketing-skills plugin',
+  },
+  {
+    id: 'bima', name: 'Bima', pronouns: 'he/him', kind: 'persona',
+    role: 'Video Producer',
+    portrait: '/brain-files/team/bima.png',
+    owns: 'HyperFrames video projects in videos/',
+  },
+  {
+    id: 'nala', name: 'Nala', pronouns: 'she/her', kind: 'persona',
+    role: 'Outlier Analyst',
+    portrait: '/brain-files/team/nala.png',
+    owns: 'Outlier scraping pipeline + this Content Studio',
+  },
+];
+
+app.get('/api/team', (req, res) => res.json(TEAM));
+
+function parseCustomerMd(slug, md) {
+  const name = (md.match(/^#\s+(.+)$/m) || [, slug])[1].trim();
+  const field = (label) => {
+    const m = md.match(new RegExp(`^-\\s+\\*\\*${label}[^:]*:\\*\\*\\s*(.+)$`, 'mi'));
+    return m ? m[1].trim() : '';
+  };
+  const health = field('Health');
+  const healthKey = health.includes('🔴') ? 'red' : health.includes('🟡') ? 'yellow' : health.includes('🟢') ? 'green' : '';
+  const nextSection = (md.split(/^##\s+Next action\s*$/m)[1] || '').split(/^##\s/m)[0];
+  const nextLine = (nextSection.match(/^-\s+\[[ x]\]\s+(.+)$/m) || [, ''])[1];
+  const due = (nextLine.match(/(\d{4}-\d{2}-\d{2})/) || [, null])[1];
+  const log = [];
+  const logSection = (md.split(/^##\s+Interaction log\s*$/m)[1] || '').split(/^##\s/m)[0];
+  for (const m of logSection.matchAll(/^-\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$/gm)) {
+    log.push({ date: m[1], text: m[2].trim() });
+  }
+  return {
+    slug,
+    name,
+    type: field('Type'),
+    stage: field('Stage'),
+    health,
+    healthKey,
+    contact: field('Contact'),
+    location: field('Location'),
+    deal: field('The deal'),
+    added: field('Added'),
+    next: { text: nextLine.replace(/\*\*/g, '').replace(/^OVERDUE\s*—\s*/i, '').trim(), due },
+    log,
+    testData: /TEST DATA/i.test(md),
+  };
+}
+
+app.get('/api/customers', (req, res) => {
+  const customers = [];
+  try {
+    for (const f of fs.readdirSync(CUSTOMERS_DIR)) {
+      if (!f.endsWith('.md') || f.startsWith('_')) continue;
+      try {
+        const md = fs.readFileSync(path.join(CUSTOMERS_DIR, f), 'utf8');
+        customers.push(parseCustomerMd(f.replace(/\.md$/, ''), md));
+      } catch {}
+    }
+  } catch {}
+  res.json(customers);
+});
+
 app.listen(PORT, () => {
   console.log(`AI Club Lombok content dashboard running at http://localhost:${PORT}`);
 });
