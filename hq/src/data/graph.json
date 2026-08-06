@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-06T03:04:09.993Z",
+ "generated": "2026-08-06T03:08:14.769Z",
  "nodes": [
   {
    "id": "hq",
@@ -13,7 +13,7 @@
    "label": "Aria",
    "group": "employee",
    "size": 11,
-   "detail": "Chief of Staff · since 2026-08-06 · last run 2026-08-06T03:55:00Z · long-term.md 54 lines"
+   "detail": "Chief of Staff · since 2026-08-06 · last run 2026-08-06T03:55:00Z · long-term.md 69 lines"
   },
   {
    "id": "ins:aria:0",
@@ -40,6 +40,22 @@
    "owner": "aria"
   },
   {
+   "id": "ins:aria:3",
+   "label": "Roster overlap needs one decision: Xenorita (cus…",
+   "group": "insight-open",
+   "size": 5,
+   "detail": "2026-08-06 · insight (open) · Roster overlap needs one decision: Xenorita (customer success) vs planned Sena (partnerships/sponsors) cover the same ground, and Rinjani/Nara, Bima/Kai overlap similarly. Recommend: keep the existing named team (Xenorita, Rinjani, Bima, Nala) and grow THEM into full employees with the /hire template, instead of hiring a second parallel roster.",
+   "owner": "aria"
+  },
+  {
+   "id": "ins:aria:4",
+   "label": "Two dashboards exist (Content Studio \"Second Bra…",
+   "group": "insight-open",
+   "size": 5,
+   "detail": "2026-08-06 · insight (open) · Two dashboards exist (Content Studio \"Second Brain\" tab in `dashboard/`, HQ React app in `hq/`). Pick one home — recommend HQ as the brain/brief surface, Content Studio stays the content-pipeline tool.",
+   "owner": "aria"
+  },
+  {
    "id": "teach:aria:0",
    "label": "Prompt injection via email — any AI reading your…",
    "group": "teaching",
@@ -60,7 +76,7 @@
    "label": "2026-08-06",
    "group": "journal",
    "size": 4,
-   "detail": "journal · 11 entries",
+   "detail": "journal · 14 entries",
    "owner": "aria"
   },
   {
@@ -78,6 +94,74 @@
    "size": 5,
    "detail": "routine · Weekly memory distill — Sunday 20:00 WITA (= 12:00 UTC)",
    "owner": "aria"
+  },
+  {
+   "id": "emp:xenorita",
+   "label": "Xenorita",
+   "group": "employee",
+   "size": 11,
+   "detail": "Customer Success Manager · memory: .agents/customer-success/ (pipeline stages, one file per customer, self-improving playbook)"
+  },
+  {
+   "id": "cust:kultur-coffee",
+   "label": "Kultur Coffee",
+   "group": "customer",
+   "size": 5,
+   "detail": "customer · venue · stage: in-talks 🟢 · next: Send Made the one-page proposal for a recurring Thursday slot — due 2026-08-07 (he asked for \"something I can ",
+   "owner": "xenorita"
+  },
+  {
+   "id": "cust:mia-chen",
+   "label": "Mia Chen",
+   "group": "customer",
+   "size": 5,
+   "detail": "customer · speaker · stage: active 🟢 · next: Invite her to headline the first September meetup with a \"v2 ships\" demo — due 2026-08-20 (lock speakers 2 wee",
+   "owner": "xenorita"
+  },
+  {
+   "id": "cust:nusa-vibe-hostel",
+   "label": "Nusa Vibe Hostel",
+   "group": "customer",
+   "size": 5,
+   "detail": "customer · venue · stage: at-risk 🔴 · next: Call Dewi: apologize properly, propose a cleanup deposit + earlier end time (21:30) for future events — due 20",
+   "owner": "xenorita"
+  },
+  {
+   "id": "cust:reefline-surf-co",
+   "label": "Reefline Surf Co.",
+   "group": "customer",
+   "size": 5,
+   "detail": "customer · sponsor · stage: contacted 🟡 · next: OVERDUE — Second nudge to Jess on IG (first message unanswered) — was due 2026-08-03 (contacted-stage cadence:",
+   "owner": "xenorita"
+  },
+  {
+   "id": "cust:salt-collective-coworking",
+   "label": "Salt Collective Coworking",
+   "group": "customer",
+   "size": 5,
+   "detail": "customer · venue · stage: pilot 🟢 · next: Confirm logistics with Ayu: headcount, wifi capacity, coffee deal for attendees — due 2026-08-10 (2 days befor",
+   "owner": "xenorita"
+  },
+  {
+   "id": "persona:rinjani",
+   "label": "Rinjani",
+   "group": "persona",
+   "size": 8,
+   "detail": "persona · Content & Social Manager · face of an existing workflow (see .agents/TEAM.md)"
+  },
+  {
+   "id": "persona:bima",
+   "label": "Bima",
+   "group": "persona",
+   "size": 8,
+   "detail": "persona · Video Producer · face of an existing workflow (see .agents/TEAM.md)"
+  },
+  {
+   "id": "persona:nala",
+   "label": "Nala",
+   "group": "persona",
+   "size": 8,
+   "detail": "persona · Outlier Analyst · face of an existing workflow (see .agents/TEAM.md)"
   }
  ],
  "links": [
@@ -99,6 +183,14 @@
   },
   {
    "source": "emp:aria",
+   "target": "ins:aria:3"
+  },
+  {
+   "source": "emp:aria",
+   "target": "ins:aria:4"
+  },
+  {
+   "source": "emp:aria",
    "target": "teach:aria:0"
   },
   {
@@ -116,6 +208,42 @@
   {
    "source": "emp:aria",
    "target": "rt:aria:1"
+  },
+  {
+   "source": "hq",
+   "target": "emp:xenorita"
+  },
+  {
+   "source": "emp:xenorita",
+   "target": "cust:kultur-coffee"
+  },
+  {
+   "source": "emp:xenorita",
+   "target": "cust:mia-chen"
+  },
+  {
+   "source": "emp:xenorita",
+   "target": "cust:nusa-vibe-hostel"
+  },
+  {
+   "source": "emp:xenorita",
+   "target": "cust:reefline-surf-co"
+  },
+  {
+   "source": "emp:xenorita",
+   "target": "cust:salt-collective-coworking"
+  },
+  {
+   "source": "hq",
+   "target": "persona:rinjani"
+  },
+  {
+   "source": "hq",
+   "target": "persona:bima"
+  },
+  {
+   "source": "hq",
+   "target": "persona:nala"
   }
  ]
 }

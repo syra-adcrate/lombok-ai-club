@@ -44,6 +44,11 @@ Read every active employee's `memory/insights.md` (items with status `open`) and
 `memory/teachings.md` (items with status `queued`). Collect, dedupe, note which
 employee raised what.
 
+Also sweep **Xenorita's pipeline** (`.agents/customer-success/customers/*.md` —
+registry-exempt, her memory predates `employees/`): any unchecked next action whose
+due date is today or past goes into the brief (decisions or top-3, by judgment), and
+any 🔴 health goes into team health flags.
+
 ## Step 4 — Compose the brief
 
 Judgment, not inventory. Sections, in order:

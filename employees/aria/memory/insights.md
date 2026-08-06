@@ -11,3 +11,11 @@ not re-served unless they escalate. Prune `done` items at weekly distill._
   WhatsApp). Undelivered briefs don't change behavior.
 - 2026-08-06 · **surfaced** · Decide the private-repo move (`syra-adcrate/hq`) before any
   employee starts journaling real email/calendar-derived content — this repo is public.
+- 2026-08-06 · **open** · Roster overlap needs one decision: Xenorita (customer success)
+  vs planned Sena (partnerships/sponsors) cover the same ground, and Rinjani/Nara,
+  Bima/Kai overlap similarly. Recommend: keep the existing named team (Xenorita,
+  Rinjani, Bima, Nala) and grow THEM into full employees with the /hire template,
+  instead of hiring a second parallel roster.
+- 2026-08-06 · **open** · Two dashboards exist (Content Studio "Second Brain" tab in
+  `dashboard/`, HQ React app in `hq/`). Pick one home — recommend HQ as the brain/brief
+  surface, Content Studio stays the content-pipeline tool.

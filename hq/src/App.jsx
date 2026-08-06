@@ -14,6 +14,8 @@ export const GROUPS = [
   { key: 'teaching', label: 'Teachings', color: '#e3c06b' },
   { key: 'journal', label: 'Journal days', color: '#5ea3e8' },
   { key: 'routine', label: 'Routines', color: '#54b8ba' },
+  { key: 'customer', label: 'Customers', color: '#67b26f' },
+  { key: 'persona', label: 'Personas', color: '#8b90ad' },
 ]
 
 export default function App() {

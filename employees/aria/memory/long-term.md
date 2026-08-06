@@ -38,7 +38,17 @@ everything else here._
   content, names of counterparties, amounts, or PII. Long-term home for the employee
   system is a future private repo (e.g. `syra-adcrate/hq`).
 - FACT(2026-08-06) Planned roster after Aria: Nara (Community Manager), Kai (Content
-  Studio Operator), Sena (Partnerships & Sponsors).
+  Studio Operator), Sena (Partnerships & Sponsors) — but see next fact before hiring:
+  overlap with existing personas must be resolved first.
+- FACT(2026-08-06) A parallel team already exists on `main` (built in another session):
+  **Xenorita** (she/her, Customer Success Manager, full agent, memory in
+  `.agents/customer-success/` — pipeline, per-customer files, self-improving playbook;
+  currently seeded with TEST customers) plus personas **Rinjani** (content/social),
+  **Bima** (video), **Nala** (per `.agents/TEAM.md`). Xenorita is registry-exempt;
+  I sweep her pipeline for overdue next actions in every standup.
+- FACT(2026-08-06) The Content Studio dashboard (`dashboard/`) also has a "Second
+  Brain" tab; the HQ React app (`hq/`) is the employee-system surface. Two dashboards
+  exist — consolidation direction belongs to Syra.
 - FACT(2026-08-06) Gmail + Google Calendar connectors are installed on the org but not
   yet enabled for chats — Syra's explicit decision for now. Standups run in **example
   mode**: `employees/_fixtures/` holds fabricated inbox/calendar data, briefs are
