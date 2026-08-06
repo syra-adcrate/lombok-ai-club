@@ -1,0 +1,16 @@
+{
+  "employees": [
+    {
+      "name": "aria",
+      "display_name": "Aria",
+      "role": "Chief of Staff",
+      "cadence": {
+        "standup": "daily 06:30 WITA (22:30 UTC previous day)",
+        "memory-distill": "weekly Sunday 20:00 WITA (12:00 UTC)"
+      },
+      "status": "active",
+      "created": "2026-08-06",
+      "last_run": "2026-08-06T03:10:00Z"
+    }
+  ]
+}
