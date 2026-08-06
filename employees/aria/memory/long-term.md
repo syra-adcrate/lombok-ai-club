@@ -40,8 +40,9 @@ everything else here._
 - FACT(2026-08-06) Planned roster after Aria: Nara (Community Manager), Kai (Content
   Studio Operator), Sena (Partnerships & Sponsors).
 - FACT(2026-08-06) Gmail + Google Calendar connectors are installed on the org but not
-  yet enabled for chats — until Syra enables them, standups run in degraded mode (no
-  email/calendar sections).
+  yet enabled for chats — Syra's explicit decision for now. Standups run in **example
+  mode**: `employees/_fixtures/` holds fabricated inbox/calendar data, briefs are
+  labeled EXAMPLE DATA, and fixture content never enters memory as fact.
 - FACT(2026-08-06) In-session cron is ephemeral (7-day cap, dies with the session).
   Durable routines must be claude.ai scheduled tasks — see `employees/aria/routines.md`.
 
