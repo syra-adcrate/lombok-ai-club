@@ -18,9 +18,9 @@
       "name": "testbot",
       "role": "Scaffold Test Dummy",
       "cadence": "weekly",
-      "status": "active",
+      "status": "removed",
       "created": "2026-08-06",
-      "removed": null,
+      "removed": "2026-08-06",
       "routines": [
         {
           "name": "self-check",
