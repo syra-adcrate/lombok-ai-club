@@ -138,14 +138,14 @@ and Sena's profiles).
 ## Phased build
 
 ### Phase 0 — Foundation (half a day)
-- [ ] **F1** Create `employees/` tree: `_registry.json` (empty roster) + `_templates/`
+- [x] **F1** Create `employees/` tree: `_registry.json` (empty roster) + `_templates/`
       (agent template, memory folder with `profile.md` / `long-term.md` / `insights.md` /
       `teachings.md` skeletons containing the rules above).
-- [ ] **F2** Write the agent template `_templates/agent.md`: frontmatter (name,
+- [x] **F2** Write the agent template `_templates/agent.md`: frontmatter (name,
       description, tools) + system prompt that hard-codes the memory protocol
       (read-on-start, journal-on-end, never touch other employees' folders).
-- [ ] **F3** Build the **`/hire` skill** (see checklist below — the skill automates it).
-- [ ] **F4** Build the **`memory-distill` skill** (input: employee name; does the weekly
+- [x] **F3** Build the **`/hire` skill** (see checklist below — the skill automates it).
+- [x] **F4** Build the **`memory-distill` skill** (input: employee name; does the weekly
       compression; enforces the long-term.md size cap).
 
 ### Phase 1 — First employee + daily brief (1 day)
