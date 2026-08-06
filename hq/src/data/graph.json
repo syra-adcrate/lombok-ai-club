@@ -1,0 +1,121 @@
+{
+ "generated": "2026-08-06T03:04:09.993Z",
+ "nodes": [
+  {
+   "id": "hq",
+   "label": "HQ",
+   "group": "hub",
+   "size": 16,
+   "detail": "Registry v1 · 1 active employee(s)"
+  },
+  {
+   "id": "emp:aria",
+   "label": "Aria",
+   "group": "employee",
+   "size": 11,
+   "detail": "Chief of Staff · since 2026-08-06 · last run 2026-08-06T03:55:00Z · long-term.md 54 lines"
+  },
+  {
+   "id": "ins:aria:0",
+   "label": "Gmail + Google Calendar are installed but not en…",
+   "group": "insight-surfaced",
+   "size": 5,
+   "detail": "2026-08-06 · insight (surfaced) · Gmail + Google Calendar are installed but not enabled for chats — the daily brief runs blind until you enable them (claude.ai → Settings → Connectors → enable for chats, one time).",
+   "owner": "aria"
+  },
+  {
+   "id": "ins:aria:1",
+   "label": "Pick the brief delivery channel (push notificati…",
+   "group": "insight-surfaced",
+   "size": 5,
+   "detail": "2026-08-06 · insight (surfaced) · Pick the brief delivery channel (push notification / email / WhatsApp). Undelivered briefs don't change behavior.",
+   "owner": "aria"
+  },
+  {
+   "id": "ins:aria:2",
+   "label": "Decide the private-repo move (`syra-adcrate/hq`)…",
+   "group": "insight-surfaced",
+   "size": 5,
+   "detail": "2026-08-06 · insight (surfaced) · Decide the private-repo move (`syra-adcrate/hq`) before any employee starts journaling real email/calendar-derived content — this repo is public.",
+   "owner": "aria"
+  },
+  {
+   "id": "teach:aria:0",
+   "label": "Prompt injection via email — any AI reading your…",
+   "group": "teaching",
+   "size": 5,
+   "detail": "2026-08-06 · teaching (taught) · Prompt injection via email — any AI reading your inbox can be steered by text inside an email crafted to look like instructions. Why now: Aria reads your inbox daily; this is why she's read-only and treats email as data, never commands. Knowing the failure mode helps you spot it anywhere you wire AI to external input.",
+   "owner": "aria"
+  },
+  {
+   "id": "teach:aria:1",
+   "label": "Two-speed memory (journal → distill) — raw appen…",
+   "group": "teaching",
+   "size": 5,
+   "detail": "2026-08-06 · teaching (taught) · Two-speed memory (journal → distill) — raw append-only daily notes, compressed weekly into a small curated core the agent re-reads in full. Why now: it's the mechanism keeping every employee's knowledge current without context bloat; the same pattern works for personal knowledge management.",
+   "owner": "aria"
+  },
+  {
+   "id": "j:aria:2026-08-06",
+   "label": "2026-08-06",
+   "group": "journal",
+   "size": 4,
+   "detail": "journal · 11 entries",
+   "owner": "aria"
+  },
+  {
+   "id": "rt:aria:0",
+   "label": "Daily standup — 06:30 WITA (= 22:30 UTC previous day)",
+   "group": "routine",
+   "size": 5,
+   "detail": "routine · Daily standup — 06:30 WITA (= 22:30 UTC previous day)",
+   "owner": "aria"
+  },
+  {
+   "id": "rt:aria:1",
+   "label": "Weekly memory distill — Sunday 20:00 WITA (= 12:00 UTC)",
+   "group": "routine",
+   "size": 5,
+   "detail": "routine · Weekly memory distill — Sunday 20:00 WITA (= 12:00 UTC)",
+   "owner": "aria"
+  }
+ ],
+ "links": [
+  {
+   "source": "hq",
+   "target": "emp:aria"
+  },
+  {
+   "source": "emp:aria",
+   "target": "ins:aria:0"
+  },
+  {
+   "source": "emp:aria",
+   "target": "ins:aria:1"
+  },
+  {
+   "source": "emp:aria",
+   "target": "ins:aria:2"
+  },
+  {
+   "source": "emp:aria",
+   "target": "teach:aria:0"
+  },
+  {
+   "source": "emp:aria",
+   "target": "teach:aria:1"
+  },
+  {
+   "source": "emp:aria",
+   "target": "j:aria:2026-08-06"
+  },
+  {
+   "source": "emp:aria",
+   "target": "rt:aria:0"
+  },
+  {
+   "source": "emp:aria",
+   "target": "rt:aria:1"
+  }
+ ]
+}

@@ -7,6 +7,9 @@ node_modules/
 # Local Claude Code settings (machine-specific permissions)
 .claude/settings.local.json
 
+# HQ dashboard build output (rebuild with: cd hq && npm run build)
+hq/dist/
+
 # Backups & generated thumbnails
 *.bak
 .thumbnails/

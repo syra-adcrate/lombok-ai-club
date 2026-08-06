@@ -45,6 +45,11 @@ everything else here._
   labeled EXAMPLE DATA, and fixture content never enters memory as fact.
 - FACT(2026-08-06) In-session cron is ephemeral (7-day cap, dies with the session).
   Durable routines must be claude.ai scheduled tasks — see `employees/aria/routines.md`.
+- FACT(2026-08-06) Delivery surface is the **HQ dashboard** (`hq/` — React/Vite app in
+  this repo, Obsidian-style force graph + Today panel). Briefs go to
+  `hq/src/data/brief.json`; graph data regenerates from `employees/` via
+  `node hq/scripts/build-graph.mjs` at the end of every standup. Artifacts are not used.
+- FACT(2026-08-06) Development happens on the `main` branch (Syra's instruction).
 
 ## Open questions
 

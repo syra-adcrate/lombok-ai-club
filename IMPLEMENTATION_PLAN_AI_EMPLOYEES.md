@@ -159,10 +159,18 @@ and Sena's profiles).
       standups first to tune the brief before trusting the cron.
 
 ### Phase 2 — Dashboard (1 day)
-- [ ] **D1** Build the **`hq-dashboard` skill**: scanner (employees/ → nodes/edges JSON)
-      + single-file HTML renderer (canvas force graph, dark theme, filter panel, Today
-      panel). Publish as an Artifact; keep the URL stable across refreshes.
-- [ ] **D2** Append "regenerate dashboard" as the final step of Aria's daily routine.
+
+_Direction change (2026-08-06, Syra): everything lives on the dashboard — a **React app
+in this repo** (`hq/`), no artifacts. The second brain stays as git-tracked files in
+`employees/`; the dashboard reads generated JSON snapshots of it._
+
+- [x] **D1** Build the `hq/` React app (Vite + react + d3-force): canvas force graph,
+      dark Obsidian-style theme, filter panel with per-group colors/counts/search,
+      Today panel rendering `hq/src/data/brief.json`, node-detail card.
+      `hq/scripts/build-graph.mjs` scans `employees/` → `hq/src/data/graph.json`.
+- [x] **D2** Standup delivery rewired: briefs are written as structured JSON to
+      `hq/src/data/brief.json` + graph data regenerated at the end of every standup.
+      No artifact publishing anywhere in the loop.
 
 ### Phase 3 — Scale the roster (half a day each)
 - [ ] **R1** `/hire Nara "Community Manager"` + her routines; profile points at the
