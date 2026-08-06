@@ -289,6 +289,7 @@
   .st-pill { background: rgba(122,184,255,.13); color: #7ab8ff; }
   .t-pill { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
   .test-pill { background: rgba(242,182,76,.15); color: var(--accent-2); }
+  #brain-frame { display: block; width: 100%; height: 78vh; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
 </style>
 </head>
 <body>
@@ -424,6 +425,13 @@
       It's a read-only view — to log an interaction, move a stage, or plan follow-ups,
       talk to Xenorita in Claude Code (<code>/xenorita</code>). She updates the files and this page follows.
     </div>
+    <h2 style="margin-top:30px">Workspace graph</h2>
+    <iframe id="brain-frame" data-src="second-brain.html" title="Workspace graph — every file, clustered by part"></iframe>
+    <div class="buffer-note">
+      🛰 Every file in the workspace as an Obsidian-style graph — clustered by part, teal lines are real
+      cross-references. Drag, zoom, hover to trace connections; click a file to open it on GitHub.
+      Regenerate after adding files with <code>node scripts/mission-control/build.mjs</code>.
+    </div>
   </section>
 </main>
 <div id="modal-backdrop">
@@ -453,6 +461,10 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
   $('#tab-' + b.dataset.tab).classList.add('active');
+  if (b.dataset.tab === 'brain') {
+    const f = $('#brain-frame');
+    if (!f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // load once the tab is visible so the graph sizes correctly
+  }
 }));
 
 // ---- Upload ----

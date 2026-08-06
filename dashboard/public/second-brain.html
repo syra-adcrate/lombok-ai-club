@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control — Lombok AI Club</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b23; --panel-2: #1d242f; --border: #2a3341;
+    --text: #e8edf4; --muted: #8a96a8; --accent: #35c2a0;
+    --radius: 12px;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  #graph { position: fixed; inset: 0; display: block; cursor: grab; }
+  #graph.dragging { cursor: grabbing; }
+
+  /* ---- control panel (top-left) ---- */
+  #panel {
+    position: fixed; top: 16px; left: 16px; width: 248px; z-index: 20;
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 8px 30px rgba(0,0,0,.45);
+    max-height: calc(100vh - 32px); overflow-y: auto;
+  }
+  #panel-head {
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
+    user-select: none;
+  }
+  #panel-head h1 { font-size: 13px; font-weight: 700; letter-spacing: .2px; flex: 1; }
+  #panel-head h1 span { color: var(--accent); }
+  #panel-head .caret { color: var(--muted); font-size: 10px; transition: transform .15s; }
+  #panel.collapsed .caret { transform: rotate(-90deg); }
+  #panel.collapsed #panel-body { display: none; }
+  #panel-body { padding: 0 14px 14px; }
+
+  .sect { border-top: 1px solid var(--border); padding: 10px 0; }
+  .sect h2 {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted); margin-bottom: 9px;
+  }
+  #panel input[type="search"] {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 12.5px; padding: 7px 10px; font-family: inherit;
+  }
+  #panel input[type="search"]:focus { outline: none; border-color: var(--accent); }
+
+  .toggle { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; font-size: 12.5px; color: var(--text); user-select: none; }
+  .toggle input { accent-color: var(--accent); }
+
+  .group-row {
+    display: flex; align-items: center; gap: 8px; padding: 4px 6px; margin: 0 -6px;
+    border-radius: 7px; cursor: pointer; font-size: 12.5px; user-select: none;
+  }
+  .group-row:hover { background: var(--panel-2); }
+  .group-row .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .group-row .n { flex: 1; }
+  .group-row .c { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .group-row.off { opacity: .35; }
+  .group-row.off .dot { background: var(--muted) !important; }
+
+  .slider { padding: 3px 0 7px; }
+  .slider label { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
+  .slider label output { font-family: var(--mono); color: var(--text); }
+  .slider input {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 2px;
+    background: var(--border); outline: none; cursor: pointer;
+  }
+  .slider input::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--accent); border: none;
+  }
+  .slider input::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: none; }
+  .slider input:focus-visible { box-shadow: 0 0 0 2px rgba(53,194,160,.5); }
+
+  /* ---- stat chip (top-right) ---- */
+  #stats {
+    position: fixed; top: 16px; right: 16px; z-index: 20;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+    padding: 8px 16px; font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+  }
+  #stats b { color: var(--text); font-weight: 700; }
+
+  /* ---- tooltip ---- */
+  #tip {
+    position: fixed; z-index: 30; pointer-events: none; display: none; max-width: 420px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 11px; font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
+  }
+  #tip .p { color: var(--text); word-break: break-all; }
+  #tip .m { color: var(--muted); }
+
+  @media (max-width: 640px) {
+    #panel { width: calc(100vw - 32px); }
+    #stats { display: none; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="graph"></canvas>
+  <div id="panel">
+    <div id="panel-head">
+      <h1>Lombok AI Club <span>&#47;&#47;</span> Mission Control</h1>
+      <span class="caret">&#9660;</span>
+    </div>
+    <div id="panel-body">
+      <div class="sect">
+        <h2>Filters</h2>
+        <input id="q" type="search" placeholder="Search files&hellip;" autocomplete="off">
+        <label class="toggle" style="margin-top:8px"><input id="t-media" type="checkbox" checked> Show attachments (media)</label>
+        <label class="toggle"><input id="t-refs" type="checkbox"> Cross-links only</label>
+      </div>
+      <div class="sect">
+        <h2>Groups</h2>
+        <div class="group-row" data-part="intake">
+      <span class="dot" style="background:#35c2a0"></span>
+      <span class="n">01 · Intake <span style="color:var(--muted)">Outlier pipeline</span></span>
+      <span class="c">10</span>
+    </div><div class="group-row" data-part="curation">
+      <span class="dot" style="background:#f2b64c"></span>
+      <span class="n">02 · Curation <span style="color:var(--muted)">Content Studio</span></span>
+      <span class="c">14</span>
+    </div><div class="group-row" data-part="synthesis">
+      <span class="dot" style="background:#7ab8ff"></span>
+      <span class="n">03 · Synthesis <span style="color:var(--muted)">Remix briefs</span></span>
+      <span class="c">3</span>
+    </div><div class="group-row" data-part="production">
+      <span class="dot" style="background:#b39ddb"></span>
+      <span class="n">04 · Production <span style="color:var(--muted)">Video projects</span></span>
+      <span class="c">84</span>
+    </div><div class="group-row" data-part="memory">
+      <span class="dot" style="background:#e0604f"></span>
+      <span class="n">Memory <span style="color:var(--muted)">Context &amp; instructions</span></span>
+      <span class="c">25</span>
+    </div><div class="group-row" data-part="ops">
+      <span class="dot" style="background:#8a96a8"></span>
+      <span class="n">Ops <span style="color:var(--muted)">Plans, rubrics &amp; tooling</span></span>
+      <span class="c">4</span>
+    </div>
+      </div>
+      <div class="sect">
+        <h2>Display</h2>
+        <div class="slider">
+    <label>Text fade threshold<output>1.1</output></label>
+    <input type="range" data-p="textFade" min="0.2" max="3" step="0.1" value="1.1">
+  </div>
+        <div class="slider">
+    <label>Node size<output>1</output></label>
+    <input type="range" data-p="nodeSize" min="0.5" max="2.5" step="0.1" value="1">
+  </div>
+        <div class="slider">
+    <label>Link thickness<output>1</output></label>
+    <input type="range" data-p="linkThick" min="0.4" max="3" step="0.1" value="1">
+  </div>
+      </div>
+      <div class="sect">
+        <h2>Forces</h2>
+        <div class="slider">
+    <label>Center force<output>0.35</output></label>
+    <input type="range" data-p="centerForce" data-sim="1" min="0" max="1" step="0.05" value="0.35">
+  </div>
+        <div class="slider">
+    <label>Repel force<output>1</output></label>
+    <input type="range" data-p="repelForce" data-sim="1" min="0.2" max="4" step="0.1" value="1">
+  </div>
+        <div class="slider">
+    <label>Link force<output>0.6</output></label>
+    <input type="range" data-p="linkForce" data-sim="1" min="0" max="1.5" step="0.05" value="0.6">
+  </div>
+        <div class="slider">
+    <label>Link distance<output>70</output></label>
+    <input type="range" data-p="linkDist" data-sim="1" min="20" max="200" step="5" value="70">
+  </div>
+      </div>
+    </div>
+  </div>
+  <div id="stats"><b>140</b> files &middot; 77.6 MB &middot; 6 parts &middot; main</div>
+  <div id="tip"></div>
+  <script>window.__MC__ = {"repo":"https://github.com/syra-adcrate/lombok-ai-club","branch":"main","generated":"2026-08-06","totalFiles":140,"totalBytes":81369665,"parts":[{"id":"intake","stage":"01","name":"Intake","title":"Outlier pipeline","color":"#35c2a0","desc":"Scrapes viral AI content via Apify, scores it, feeds the studio.","count":10},{"id":"curation","stage":"02","name":"Curation","title":"Content Studio","color":"#f2b64c","desc":"Dashboard for rating outliers, media library, remix briefs.","count":14},{"id":"synthesis","stage":"03","name":"Synthesis","title":"Remix briefs","color":"#7ab8ff","desc":"Outlier post → hook → shot plan, adapted to the club’s audience.","count":3},{"id":"production","stage":"04","name":"Production","title":"Video projects","color":"#b39ddb","desc":"HyperFrames compositions rendered to MP4 reels and slideshows.","count":84},{"id":"memory","stage":null,"name":"Memory","title":"Context & instructions","color":"#e0604f","desc":"What Claude loads every session: routing rules, positioning, voice.","count":25},{"id":"ops","stage":null,"name":"Ops","title":"Plans, rubrics & tooling","color":"#8a96a8","desc":"Implementation plans, the remix audit rubric, this generator.","count":4}],"nodes":[{"id":"part:intake","kind":"hub","label":"Intake","part":"intake"},{"id":"part:curation","kind":"hub","label":"Curation","part":"curation"},{"id":"part:synthesis","kind":"hub","label":"Synthesis","part":"synthesis"},{"id":"part:production","kind":"hub","label":"Production","part":"production"},{"id":"part:memory","kind":"hub","label":"Memory","part":"memory"},{"id":"part:ops","kind":"hub","label":"Ops","part":"ops"},{"id":"proj:5-ai-tools-slideshow","kind":"subhub","label":"5-ai-tools-slideshow","part":"production"},{"id":"proj:ai-escape-news-slideshow","kind":"subhub","label":"ai-escape-news-slideshow","part":"production"},{"id":"proj:ai-tools-reel","kind":"subhub","label":"ai-tools-reel","part":"production"},{"id":"proj:ai-writing-fix-slideshow","kind":"subhub","label":"ai-writing-fix-slideshow","part":"production"},{"id":".agents/TEAM.md","kind":"file","label":"TEAM.md","part":"memory","type":"doc","size":1804,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/TEAM.md"},{"id":".agents/customer-success/PIPELINE.md","kind":"file","label":"PIPELINE.md","part":"memory","type":"doc","size":2567,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/PIPELINE.md"},{"id":".agents/customer-success/customers/_template.md","kind":"file","label":"_template.md","part":"memory","type":"doc","size":776,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/_template.md"},{"id":".agents/customer-success/customers/kultur-coffee.md","kind":"file","label":"kultur-coffee.md","part":"memory","type":"doc","size":1131,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/kultur-coffee.md"},{"id":".agents/customer-success/customers/mia-chen.md","kind":"file","label":"mia-chen.md","part":"memory","type":"doc","size":1289,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/mia-chen.md"},{"id":".agents/customer-success/customers/nusa-vibe-hostel.md","kind":"file","label":"nusa-vibe-hostel.md","part":"memory","type":"doc","size":1271,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/nusa-vibe-hostel.md"},{"id":".agents/customer-success/customers/reefline-surf-co.md","kind":"file","label":"reefline-surf-co.md","part":"memory","type":"doc","size":1055,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/reefline-surf-co.md"},{"id":".agents/customer-success/customers/salt-collective-coworking.md","kind":"file","label":"salt-collective-coworking.md","part":"memory","type":"doc","size":1279,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/customers/salt-collective-coworking.md"},{"id":".agents/customer-success/playbook.md","kind":"file","label":"playbook.md","part":"memory","type":"doc","size":2039,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/playbook.md"},{"id":".agents/customer-success/xenorita.png","kind":"file","label":"xenorita.png","part":"memory","type":"media","size":113602,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/xenorita.png"},{"id":".agents/customer-success/xenorita.svg","kind":"file","label":"xenorita.svg","part":"memory","type":"media","size":7028,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/customer-success/xenorita.svg"},{"id":".agents/product-marketing.md","kind":"file","label":"product-marketing.md","part":"memory","type":"doc","size":9901,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/product-marketing.md"},{"id":".agents/team/bima.png","kind":"file","label":"bima.png","part":"memory","type":"media","size":97291,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/bima.png"},{"id":".agents/team/bima.svg","kind":"file","label":"bima.svg","part":"memory","type":"media","size":5876,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/bima.svg"},{"id":".agents/team/nala.png","kind":"file","label":"nala.png","part":"memory","type":"media","size":106387,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/nala.png"},{"id":".agents/team/nala.svg","kind":"file","label":"nala.svg","part":"memory","type":"media","size":6403,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/nala.svg"},{"id":".agents/team/rinjani.png","kind":"file","label":"rinjani.png","part":"memory","type":"media","size":105889,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/rinjani.png"},{"id":".agents/team/rinjani.svg","kind":"file","label":"rinjani.svg","part":"memory","type":"media","size":6595,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.agents/team/rinjani.svg"},{"id":".claude/agents/xenorita.md","kind":"file","label":"xenorita.md","part":"memory","type":"doc","size":5839,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.claude/agents/xenorita.md"},{"id":".claude/launch.json","kind":"file","label":"launch.json","part":"memory","type":"data","size":896,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.claude/launch.json"},{"id":".claude/skills/xenorita/SKILL.md","kind":"file","label":"SKILL.md","part":"memory","type":"doc","size":1190,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.claude/skills/xenorita/SKILL.md"},{"id":".gitignore","kind":"file","label":".gitignore","part":"memory","type":"other","size":425,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/.gitignore"},{"id":"CLAUDE.md","kind":"file","label":"CLAUDE.md","part":"memory","type":"doc","size":2570,"date":1785985261,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/CLAUDE.md"},{"id":"IMPLEMENTATION_PLAN.md","kind":"file","label":"IMPLEMENTATION_PLAN.md","part":"ops","type":"doc","size":8763,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/IMPLEMENTATION_PLAN.md"},{"id":"IMPLEMENTATION_PLAN_ADS.md","kind":"file","label":"IMPLEMENTATION_PLAN_ADS.md","part":"ops","type":"doc","size":11778,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/IMPLEMENTATION_PLAN_ADS.md"},{"id":"LICENSE","kind":"file","label":"LICENSE","part":"memory","type":"other","size":1071,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/LICENSE"},{"id":"README.md","kind":"file","label":"README.md","part":"memory","type":"doc","size":5800,"date":1785984849,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/README.md"},{"id":"REMIXES/batch-01-first-meetup.md","kind":"file","label":"batch-01-first-meetup.md","part":"synthesis","type":"doc","size":7590,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-01-first-meetup.md"},{"id":"REMIXES/batch-02-english-market.md","kind":"file","label":"batch-02-english-market.md","part":"synthesis","type":"doc","size":9600,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-02-english-market.md"},{"id":"REMIXES/batch-03-outlier-remixes.md","kind":"file","label":"batch-03-outlier-remixes.md","part":"synthesis","type":"doc","size":13442,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIXES/batch-03-outlier-remixes.md"},{"id":"REMIX_AUDIT_RUBRIC.md","kind":"file","label":"REMIX_AUDIT_RUBRIC.md","part":"ops","type":"doc","size":3406,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/REMIX_AUDIT_RUBRIC.md"},{"id":"dashboard/README.md","kind":"file","label":"README.md","part":"curation","type":"doc","size":2787,"date":1785985540,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/README.md"},{"id":"dashboard/data/assets.json","kind":"file","label":"assets.json","part":"curation","type":"data","size":3195,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/assets.json"},{"id":"dashboard/data/outliers.json","kind":"file","label":"outliers.json","part":"curation","type":"data","size":329388,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/outliers.json"},{"id":"dashboard/data/remixes.json","kind":"file","label":"remixes.json","part":"curation","type":"data","size":4833,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/remixes.json"},{"id":"dashboard/data/schedule.json","kind":"file","label":"schedule.json","part":"curation","type":"data","size":931,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/data/schedule.json"},{"id":"dashboard/package-lock.json","kind":"file","label":"package-lock.json","part":"curation","type":"data","size":84587,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/package-lock.json"},{"id":"dashboard/package.json","kind":"file","label":"package.json","part":"curation","type":"data","size":582,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/package.json"},{"id":"dashboard/public/index.html","kind":"file","label":"index.html","part":"curation","type":"html","size":59449,"date":1785985540,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/public/index.html"},{"id":"dashboard/schema.sql","kind":"file","label":"schema.sql","part":"curation","type":"data","size":90,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/schema.sql"},{"id":"dashboard/scripts/make-seed-sql.js","kind":"file","label":"make-seed-sql.js","part":"curation","type":"code","size":1107,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/scripts/make-seed-sql.js"},{"id":"dashboard/seed.sql","kind":"file","label":"seed.sql","part":"curation","type":"data","size":192550,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/seed.sql"},{"id":"dashboard/server.js","kind":"file","label":"server.js","part":"curation","type":"code","size":22508,"date":1785985540,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/server.js"},{"id":"dashboard/src/worker.js","kind":"file","label":"worker.js","part":"curation","type":"code","size":15394,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/src/worker.js"},{"id":"dashboard/wrangler.jsonc","kind":"file","label":"wrangler.jsonc","part":"curation","type":"data","size":582,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/dashboard/wrangler.jsonc"},{"id":"scripts/mission-control/build.mjs","kind":"file","label":"build.mjs","part":"ops","type":"code","size":28869,"date":1785985755.2833285,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/mission-control/build.mjs"},{"id":"scripts/outlier-pipeline/README.md","kind":"file","label":"README.md","part":"intake","type":"doc","size":2288,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/README.md"},{"id":"scripts/outlier-pipeline/ads.config.json","kind":"file","label":"ads.config.json","part":"intake","type":"data","size":1925,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/ads.config.json"},{"id":"scripts/outlier-pipeline/ads.json","kind":"file","label":"ads.json","part":"intake","type":"data","size":116968,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/ads.json"},{"id":"scripts/outlier-pipeline/build.mjs","kind":"file","label":"build.mjs","part":"intake","type":"code","size":641,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/build.mjs"},{"id":"scripts/outlier-pipeline/content.json","kind":"file","label":"content.json","part":"intake","type":"data","size":195374,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/content.json"},{"id":"scripts/outlier-pipeline/dashboard-template.html","kind":"file","label":"dashboard-template.html","part":"intake","type":"html","size":14568,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/dashboard-template.html"},{"id":"scripts/outlier-pipeline/normalize-ads.mjs","kind":"file","label":"normalize-ads.mjs","part":"intake","type":"code","size":3438,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/normalize-ads.mjs"},{"id":"scripts/outlier-pipeline/normalize.mjs","kind":"file","label":"normalize.mjs","part":"intake","type":"code","size":5362,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/normalize.mjs"},{"id":"scripts/outlier-pipeline/outlier-radar.html","kind":"file","label":"outlier-radar.html","part":"intake","type":"html","size":193864,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/outlier-radar.html"},{"id":"scripts/outlier-pipeline/to-studio.mjs","kind":"file","label":"to-studio.mjs","part":"intake","type":"code","size":2972,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/scripts/outlier-pipeline/to-studio.mjs"},{"id":"videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA","kind":"file","label":"2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA","part":"production","type":"other","size":18830,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA"},{"id":"videos/5-ai-tools-slideshow/.media/preferences.json","kind":"file","label":"preferences.json","part":"production","type":"data","size":872,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/.media/preferences.json"},{"id":"videos/5-ai-tools-slideshow/AGENTS.md","kind":"file","label":"AGENTS.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/AGENTS.md"},{"id":"videos/5-ai-tools-slideshow/BRIEF.md","kind":"file","label":"BRIEF.md","part":"production","type":"doc","size":1559,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/BRIEF.md"},{"id":"videos/5-ai-tools-slideshow/CLAUDE.md","kind":"file","label":"CLAUDE.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/CLAUDE.md"},{"id":"videos/5-ai-tools-slideshow/STORYBOARD.md","kind":"file","label":"STORYBOARD.md","part":"production","type":"doc","size":2156,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/STORYBOARD.md"},{"id":"videos/5-ai-tools-slideshow/assets/cafe-a.jpg","kind":"file","label":"cafe-a.jpg","part":"production","type":"media","size":124334,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/cafe-a.jpg"},{"id":"videos/5-ai-tools-slideshow/assets/cafe-b.jpg","kind":"file","label":"cafe-b.jpg","part":"production","type":"media","size":134674,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/cafe-b.jpg"},{"id":"videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2","kind":"file","label":"archivo-black-400.woff2","part":"production","type":"media","size":9792,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2"},{"id":"videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2","kind":"file","label":"space-mono-400.woff2","part":"production","type":"media","size":9464,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2"},{"id":"videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2","kind":"file","label":"space-mono-700.woff2","part":"production","type":"media","size":9552,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2"},{"id":"videos/5-ai-tools-slideshow/assets/meetup.jpg","kind":"file","label":"meetup.jpg","part":"production","type":"media","size":32486,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/assets/meetup.jpg"},{"id":"videos/5-ai-tools-slideshow/hyperframes.json","kind":"file","label":"hyperframes.json","part":"production","type":"data","size":318,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/hyperframes.json"},{"id":"videos/5-ai-tools-slideshow/index.html","kind":"file","label":"index.html","part":"production","type":"html","size":15630,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/index.html"},{"id":"videos/5-ai-tools-slideshow/meta.json","kind":"file","label":"meta.json","part":"production","type":"data","size":111,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/meta.json"},{"id":"videos/5-ai-tools-slideshow/package.json","kind":"file","label":"package.json","part":"production","type":"data","size":305,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/package.json"},{"id":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4","kind":"file","label":"5-ai-tools-slideshow_2026-07-23_11-35-57.mp4","part":"production","type":"media","size":11741748,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4"},{"id":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4","kind":"file","label":"5-ai-tools-slideshow_2026-07-23_11-55-03.mp4","part":"production","type":"media","size":11665372,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4"},{"id":"videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg","kind":"file","label":"contact-sheet.jpg","part":"production","type":"media","size":227194,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg"},{"id":"videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png","kind":"file","label":"frame-00-at-1.8s.png","part":"production","type":"media","size":2512566,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png"},{"id":"videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png","kind":"file","label":"frame-01-at-5.9s.png","part":"production","type":"media","size":2582093,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png"},{"id":"videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png","kind":"file","label":"frame-02-at-29.3s.png","part":"production","type":"media","size":2254252,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png"},{"id":"videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png","kind":"file","label":"frame-03-at-31.04s.png","part":"production","type":"media","size":2262222,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png"},{"id":"videos/ai-escape-news-slideshow/AGENTS.md","kind":"file","label":"AGENTS.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/AGENTS.md"},{"id":"videos/ai-escape-news-slideshow/BRIEF.md","kind":"file","label":"BRIEF.md","part":"production","type":"doc","size":1857,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/BRIEF.md"},{"id":"videos/ai-escape-news-slideshow/CLAUDE.md","kind":"file","label":"CLAUDE.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/CLAUDE.md"},{"id":"videos/ai-escape-news-slideshow/STORYBOARD.md","kind":"file","label":"STORYBOARD.md","part":"production","type":"doc","size":2079,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/STORYBOARD.md"},{"id":"videos/ai-escape-news-slideshow/assets/cafe-a.jpg","kind":"file","label":"cafe-a.jpg","part":"production","type":"media","size":124334,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/cafe-a.jpg"},{"id":"videos/ai-escape-news-slideshow/assets/cafe-b.jpg","kind":"file","label":"cafe-b.jpg","part":"production","type":"media","size":134674,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/cafe-b.jpg"},{"id":"videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2","kind":"file","label":"archivo-black-400.woff2","part":"production","type":"media","size":9792,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2"},{"id":"videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2","kind":"file","label":"space-mono-400.woff2","part":"production","type":"media","size":9464,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2"},{"id":"videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2","kind":"file","label":"space-mono-700.woff2","part":"production","type":"media","size":9552,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2"},{"id":"videos/ai-escape-news-slideshow/assets/meetup.jpg","kind":"file","label":"meetup.jpg","part":"production","type":"media","size":32486,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/assets/meetup.jpg"},{"id":"videos/ai-escape-news-slideshow/hyperframes.json","kind":"file","label":"hyperframes.json","part":"production","type":"data","size":318,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/hyperframes.json"},{"id":"videos/ai-escape-news-slideshow/index.html","kind":"file","label":"index.html","part":"production","type":"html","size":15797,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/index.html"},{"id":"videos/ai-escape-news-slideshow/meta.json","kind":"file","label":"meta.json","part":"production","type":"data","size":119,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/meta.json"},{"id":"videos/ai-escape-news-slideshow/package.json","kind":"file","label":"package.json","part":"production","type":"data","size":309,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/package.json"},{"id":"videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4","kind":"file","label":"ai-escape-news-slideshow_2026-07-23_12-10-47.mp4","part":"production","type":"media","size":9611838,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4"},{"id":"videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg","kind":"file","label":"contact-sheet.jpg","part":"production","type":"media","size":353623,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg"},{"id":"videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png","kind":"file","label":"frame-00-at-2s.png","part":"production","type":"media","size":2476651,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png"},{"id":"videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png","kind":"file","label":"frame-01-at-7.5s.png","part":"production","type":"media","size":2570708,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png"},{"id":"videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png","kind":"file","label":"frame-02-at-14s.png","part":"production","type":"media","size":2567679,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png"},{"id":"videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png","kind":"file","label":"frame-03-at-20.5s.png","part":"production","type":"media","size":2547149,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png"},{"id":"videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png","kind":"file","label":"frame-04-at-29.1s.png","part":"production","type":"media","size":2256042,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png"},{"id":"videos/ai-tools-reel/.media/preferences.json","kind":"file","label":"preferences.json","part":"production","type":"data","size":517,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/.media/preferences.json"},{"id":"videos/ai-tools-reel/AGENTS.md","kind":"file","label":"AGENTS.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/AGENTS.md"},{"id":"videos/ai-tools-reel/BRIEF.md","kind":"file","label":"BRIEF.md","part":"production","type":"doc","size":1765,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/BRIEF.md"},{"id":"videos/ai-tools-reel/CLAUDE.md","kind":"file","label":"CLAUDE.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/CLAUDE.md"},{"id":"videos/ai-tools-reel/POSTING.md","kind":"file","label":"POSTING.md","part":"production","type":"doc","size":1112,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/POSTING.md"},{"id":"videos/ai-tools-reel/STORYBOARD.md","kind":"file","label":"STORYBOARD.md","part":"production","type":"doc","size":3111,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/STORYBOARD.md"},{"id":"videos/ai-tools-reel/compositions/cta.html","kind":"file","label":"cta.html","part":"production","type":"html","size":6984,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/cta.html"},{"id":"videos/ai-tools-reel/compositions/hook.html","kind":"file","label":"hook.html","part":"production","type":"html","size":7237,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/hook.html"},{"id":"videos/ai-tools-reel/compositions/tools.html","kind":"file","label":"tools.html","part":"production","type":"html","size":9130,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/compositions/tools.html"},{"id":"videos/ai-tools-reel/hyperframes.json","kind":"file","label":"hyperframes.json","part":"production","type":"data","size":318,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/hyperframes.json"},{"id":"videos/ai-tools-reel/index.html","kind":"file","label":"index.html","part":"production","type":"html","size":1718,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/index.html"},{"id":"videos/ai-tools-reel/meta.json","kind":"file","label":"meta.json","part":"production","type":"data","size":97,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/meta.json"},{"id":"videos/ai-tools-reel/package.json","kind":"file","label":"package.json","part":"production","type":"data","size":298,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/package.json"},{"id":"videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4","kind":"file","label":"ai-tools-reel_2026-07-23_11-27-36.mp4","part":"production","type":"media","size":3031119,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4"},{"id":"videos/ai-tools-reel/snapshots/contact-sheet.jpg","kind":"file","label":"contact-sheet.jpg","part":"production","type":"media","size":262796,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/contact-sheet.jpg"},{"id":"videos/ai-tools-reel/snapshots/frame-00-at-3s.png","kind":"file","label":"frame-00-at-3s.png","part":"production","type":"media","size":160829,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-00-at-3s.png"},{"id":"videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png","kind":"file","label":"frame-01-at-7.7s.png","part":"production","type":"media","size":177662,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png"},{"id":"videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png","kind":"file","label":"frame-02-at-14.2s.png","part":"production","type":"media","size":202982,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png"},{"id":"videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png","kind":"file","label":"frame-03-at-20.7s.png","part":"production","type":"media","size":199100,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png"},{"id":"videos/ai-tools-reel/snapshots/frame-04-at-28s.png","kind":"file","label":"frame-04-at-28s.png","part":"production","type":"media","size":277012,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-04-at-28s.png"},{"id":"videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png","kind":"file","label":"frame-05-at-29.1s.png","part":"production","type":"media","size":263288,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png"},{"id":"videos/ai-writing-fix-slideshow/AGENTS.md","kind":"file","label":"AGENTS.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/AGENTS.md"},{"id":"videos/ai-writing-fix-slideshow/BRIEF.md","kind":"file","label":"BRIEF.md","part":"production","type":"doc","size":1569,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/BRIEF.md"},{"id":"videos/ai-writing-fix-slideshow/CLAUDE.md","kind":"file","label":"CLAUDE.md","part":"production","type":"doc","size":6717,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/CLAUDE.md"},{"id":"videos/ai-writing-fix-slideshow/STORYBOARD.md","kind":"file","label":"STORYBOARD.md","part":"production","type":"doc","size":2640,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/STORYBOARD.md"},{"id":"videos/ai-writing-fix-slideshow/assets/cafe-a.jpg","kind":"file","label":"cafe-a.jpg","part":"production","type":"media","size":124334,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/cafe-a.jpg"},{"id":"videos/ai-writing-fix-slideshow/assets/cafe-b.jpg","kind":"file","label":"cafe-b.jpg","part":"production","type":"media","size":134674,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/cafe-b.jpg"},{"id":"videos/ai-writing-fix-slideshow/assets/meetup.jpg","kind":"file","label":"meetup.jpg","part":"production","type":"media","size":32486,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/assets/meetup.jpg"},{"id":"videos/ai-writing-fix-slideshow/hyperframes.json","kind":"file","label":"hyperframes.json","part":"production","type":"data","size":318,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/hyperframes.json"},{"id":"videos/ai-writing-fix-slideshow/index.html","kind":"file","label":"index.html","part":"production","type":"html","size":20538,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/index.html"},{"id":"videos/ai-writing-fix-slideshow/meta.json","kind":"file","label":"meta.json","part":"production","type":"data","size":119,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/meta.json"},{"id":"videos/ai-writing-fix-slideshow/package.json","kind":"file","label":"package.json","part":"production","type":"data","size":309,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/package.json"},{"id":"videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg","kind":"file","label":"contact-sheet.jpg","part":"production","type":"media","size":425306,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png","kind":"file","label":"frame-00-at-2.2s.png","part":"production","type":"media","size":2572351,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png","kind":"file","label":"frame-01-at-6.5s.png","part":"production","type":"media","size":2616534,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png","kind":"file","label":"frame-02-at-11s.png","part":"production","type":"media","size":2600524,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png","kind":"file","label":"frame-03-at-15.5s.png","part":"production","type":"media","size":2610526,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png","kind":"file","label":"frame-04-at-20s.png","part":"production","type":"media","size":2608509,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png","kind":"file","label":"frame-05-at-24.5s.png","part":"production","type":"media","size":2482612,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png"},{"id":"videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png","kind":"file","label":"frame-06-at-30.5s.png","part":"production","type":"media","size":2316699,"date":1784783033,"url":"https://github.com/syra-adcrate/lombok-ai-club/blob/main/videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png"}],"edges":[{"s":"part:production","t":"proj:5-ai-tools-slideshow","kind":"part"},{"s":"part:production","t":"proj:ai-escape-news-slideshow","kind":"part"},{"s":"part:production","t":"proj:ai-tools-reel","kind":"part"},{"s":"part:production","t":"proj:ai-writing-fix-slideshow","kind":"part"},{"s":"part:memory","t":".agents/TEAM.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/PIPELINE.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/_template.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/kultur-coffee.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/mia-chen.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/nusa-vibe-hostel.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/reefline-surf-co.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/customers/salt-collective-coworking.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/playbook.md","kind":"part"},{"s":"part:memory","t":".agents/customer-success/xenorita.png","kind":"part"},{"s":"part:memory","t":".agents/customer-success/xenorita.svg","kind":"part"},{"s":"part:memory","t":".agents/product-marketing.md","kind":"part"},{"s":"part:memory","t":".agents/team/bima.png","kind":"part"},{"s":"part:memory","t":".agents/team/bima.svg","kind":"part"},{"s":"part:memory","t":".agents/team/nala.png","kind":"part"},{"s":"part:memory","t":".agents/team/nala.svg","kind":"part"},{"s":"part:memory","t":".agents/team/rinjani.png","kind":"part"},{"s":"part:memory","t":".agents/team/rinjani.svg","kind":"part"},{"s":"part:memory","t":".claude/agents/xenorita.md","kind":"part"},{"s":"part:memory","t":".claude/launch.json","kind":"part"},{"s":"part:memory","t":".claude/skills/xenorita/SKILL.md","kind":"part"},{"s":"part:memory","t":".gitignore","kind":"part"},{"s":"part:memory","t":"CLAUDE.md","kind":"part"},{"s":"part:ops","t":"IMPLEMENTATION_PLAN.md","kind":"part"},{"s":"part:ops","t":"IMPLEMENTATION_PLAN_ADS.md","kind":"part"},{"s":"part:memory","t":"LICENSE","kind":"part"},{"s":"part:memory","t":"README.md","kind":"part"},{"s":"part:synthesis","t":"REMIXES/batch-01-first-meetup.md","kind":"part"},{"s":"part:synthesis","t":"REMIXES/batch-02-english-market.md","kind":"part"},{"s":"part:synthesis","t":"REMIXES/batch-03-outlier-remixes.md","kind":"part"},{"s":"part:ops","t":"REMIX_AUDIT_RUBRIC.md","kind":"part"},{"s":"part:curation","t":"dashboard/README.md","kind":"part"},{"s":"part:curation","t":"dashboard/data/assets.json","kind":"part"},{"s":"part:curation","t":"dashboard/data/outliers.json","kind":"part"},{"s":"part:curation","t":"dashboard/data/remixes.json","kind":"part"},{"s":"part:curation","t":"dashboard/data/schedule.json","kind":"part"},{"s":"part:curation","t":"dashboard/package-lock.json","kind":"part"},{"s":"part:curation","t":"dashboard/package.json","kind":"part"},{"s":"part:curation","t":"dashboard/public/index.html","kind":"part"},{"s":"part:curation","t":"dashboard/schema.sql","kind":"part"},{"s":"part:curation","t":"dashboard/scripts/make-seed-sql.js","kind":"part"},{"s":"part:curation","t":"dashboard/seed.sql","kind":"part"},{"s":"part:curation","t":"dashboard/server.js","kind":"part"},{"s":"part:curation","t":"dashboard/src/worker.js","kind":"part"},{"s":"part:curation","t":"dashboard/wrangler.jsonc","kind":"part"},{"s":"part:ops","t":"scripts/mission-control/build.mjs","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/README.md","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/ads.config.json","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/ads.json","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/build.mjs","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/content.json","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/dashboard-template.html","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/normalize-ads.mjs","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/normalize.mjs","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/outlier-radar.html","kind":"part"},{"s":"part:intake","t":"scripts/outlier-pipeline/to-studio.mjs","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/.hyperframes/backup/2026-07-23T03-29-56-931Z-aW5kZXguaHRtbA","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/.media/preferences.json","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/AGENTS.md","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/BRIEF.md","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/CLAUDE.md","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/STORYBOARD.md","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/cafe-a.jpg","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/cafe-b.jpg","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/fonts/archivo-black-400.woff2","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/fonts/space-mono-400.woff2","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/fonts/space-mono-700.woff2","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/assets/meetup.jpg","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/hyperframes.json","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/index.html","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/meta.json","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/package.json","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-35-57.mp4","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/snapshots/contact-sheet.jpg","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/snapshots/frame-00-at-1.8s.png","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/snapshots/frame-01-at-5.9s.png","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/snapshots/frame-02-at-29.3s.png","kind":"part"},{"s":"proj:5-ai-tools-slideshow","t":"videos/5-ai-tools-slideshow/snapshots/frame-03-at-31.04s.png","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/AGENTS.md","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/BRIEF.md","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/CLAUDE.md","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/STORYBOARD.md","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/cafe-a.jpg","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/cafe-b.jpg","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/fonts/archivo-black-400.woff2","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/fonts/space-mono-400.woff2","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/fonts/space-mono-700.woff2","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/assets/meetup.jpg","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/hyperframes.json","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/index.html","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/meta.json","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/package.json","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/contact-sheet.jpg","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/frame-00-at-2s.png","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/frame-01-at-7.5s.png","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/frame-02-at-14s.png","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/frame-03-at-20.5s.png","kind":"part"},{"s":"proj:ai-escape-news-slideshow","t":"videos/ai-escape-news-slideshow/snapshots/frame-04-at-29.1s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/.media/preferences.json","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/AGENTS.md","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/BRIEF.md","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/CLAUDE.md","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/POSTING.md","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/STORYBOARD.md","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/compositions/cta.html","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/compositions/hook.html","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/compositions/tools.html","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/hyperframes.json","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/index.html","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/meta.json","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/package.json","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/contact-sheet.jpg","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-00-at-3s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-01-at-7.7s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-02-at-14.2s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-03-at-20.7s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-04-at-28s.png","kind":"part"},{"s":"proj:ai-tools-reel","t":"videos/ai-tools-reel/snapshots/frame-05-at-29.1s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/AGENTS.md","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/BRIEF.md","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/CLAUDE.md","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/STORYBOARD.md","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/assets/cafe-a.jpg","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/assets/cafe-b.jpg","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/assets/meetup.jpg","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/hyperframes.json","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/index.html","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/meta.json","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/package.json","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/contact-sheet.jpg","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-00-at-2.2s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-01-at-6.5s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-02-at-11s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-03-at-15.5s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-04-at-20s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-05-at-24.5s.png","kind":"part"},{"s":"proj:ai-writing-fix-slideshow","t":"videos/ai-writing-fix-slideshow/snapshots/frame-06-at-30.5s.png","kind":"part"},{"s":".agents/TEAM.md","t":".claude/agents/xenorita.md","kind":"ref"},{"s":".agents/TEAM.md","t":"CLAUDE.md","kind":"ref"},{"s":".agents/TEAM.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":".agents/TEAM.md","t":".agents/customer-success/xenorita.png","kind":"ref"},{"s":".agents/TEAM.md","t":".agents/team/bima.png","kind":"ref"},{"s":".agents/TEAM.md","t":".agents/team/nala.png","kind":"ref"},{"s":".agents/TEAM.md","t":".agents/team/rinjani.png","kind":"ref"},{"s":".agents/customer-success/PIPELINE.md","t":".claude/agents/xenorita.md","kind":"ref"},{"s":".agents/customer-success/PIPELINE.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":".agents/customer-success/customers/reefline-surf-co.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/customer-success/xenorita.png","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/product-marketing.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":"CLAUDE.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":"README.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/customer-success/PIPELINE.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/customer-success/customers/_template.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/customer-success/customers/kultur-coffee.md","kind":"ref"},{"s":".claude/agents/xenorita.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":".claude/launch.json","t":"dashboard/server.js","kind":"ref"},{"s":".claude/launch.json","t":"proj:ai-escape-news-slideshow","kind":"ref"},{"s":".claude/launch.json","t":"proj:ai-tools-reel","kind":"ref"},{"s":".claude/launch.json","t":"proj:ai-writing-fix-slideshow","kind":"ref"},{"s":".claude/skills/xenorita/SKILL.md","t":".claude/agents/xenorita.md","kind":"ref"},{"s":".claude/skills/xenorita/SKILL.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":".gitignore","t":"README.md","kind":"ref"},{"s":".gitignore","t":"scripts/outlier-pipeline/README.md","kind":"ref"},{"s":"CLAUDE.md","t":".agents/TEAM.md","kind":"ref"},{"s":"CLAUDE.md","t":".agents/customer-success/xenorita.png","kind":"ref"},{"s":"CLAUDE.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"CLAUDE.md","t":".claude/agents/xenorita.md","kind":"ref"},{"s":"CLAUDE.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"README.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"REMIX_AUDIT_RUBRIC.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/README.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/public/index.html","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/server.js","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/src/worker.js","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"scripts/outlier-pipeline/to-studio.mjs","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"dashboard/seed.sql","kind":"ref"},{"s":"IMPLEMENTATION_PLAN.md","t":"scripts/outlier-pipeline/normalize.mjs","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"CLAUDE.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"IMPLEMENTATION_PLAN.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"REMIX_AUDIT_RUBRIC.md","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/ads.config.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/ads.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/content.json","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/normalize-ads.mjs","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/normalize.mjs","kind":"ref"},{"s":"IMPLEMENTATION_PLAN_ADS.md","t":"scripts/outlier-pipeline/to-studio.mjs","kind":"ref"},{"s":"README.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"README.md","t":".claude/agents/xenorita.md","kind":"ref"},{"s":"README.md","t":".claude/launch.json","kind":"ref"},{"s":"README.md","t":"CLAUDE.md","kind":"ref"},{"s":"README.md","t":"LICENSE","kind":"ref"},{"s":"README.md","t":"REMIX_AUDIT_RUBRIC.md","kind":"ref"},{"s":"README.md","t":"dashboard/README.md","kind":"ref"},{"s":"README.md","t":"dashboard/wrangler.jsonc","kind":"ref"},{"s":"README.md","t":"scripts/outlier-pipeline/README.md","kind":"ref"},{"s":"README.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"README.md","t":"IMPLEMENTATION_PLAN.md","kind":"ref"},{"s":"README.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"README.md","t":"dashboard/schema.sql","kind":"ref"},{"s":"README.md","t":"dashboard/seed.sql","kind":"ref"},{"s":"README.md","t":"scripts/outlier-pipeline/normalize.mjs","kind":"ref"},{"s":"README.md","t":"scripts/outlier-pipeline/outlier-radar.html","kind":"ref"},{"s":"README.md","t":"scripts/outlier-pipeline/to-studio.mjs","kind":"ref"},{"s":"REMIXES/batch-03-outlier-remixes.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"REMIXES/batch-03-outlier-remixes.md","t":"proj:5-ai-tools-slideshow","kind":"ref"},{"s":"REMIX_AUDIT_RUBRIC.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"dashboard/README.md","t":"dashboard/data/assets.json","kind":"ref"},{"s":"dashboard/README.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/README.md","t":"dashboard/data/remixes.json","kind":"ref"},{"s":"dashboard/README.md","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"dashboard/data/assets.json","t":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4","kind":"ref"},{"s":"dashboard/data/assets.json","t":"videos/ai-escape-news-slideshow/renders/ai-escape-news-slideshow_2026-07-23_12-10-47.mp4","kind":"ref"},{"s":"dashboard/data/assets.json","t":"videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4","kind":"ref"},{"s":"dashboard/data/assets.json","t":"proj:5-ai-tools-slideshow","kind":"ref"},{"s":"dashboard/data/assets.json","t":"proj:ai-escape-news-slideshow","kind":"ref"},{"s":"dashboard/data/assets.json","t":"proj:ai-tools-reel","kind":"ref"},{"s":"dashboard/data/outliers.json","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"dashboard/data/outliers.json","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/data/remixes.json","t":"REMIXES/batch-03-outlier-remixes.md","kind":"ref"},{"s":"dashboard/data/remixes.json","t":"proj:ai-writing-fix-slideshow","kind":"ref"},{"s":"dashboard/package-lock.json","t":"dashboard/wrangler.jsonc","kind":"ref"},{"s":"dashboard/package.json","t":"dashboard/scripts/make-seed-sql.js","kind":"ref"},{"s":"dashboard/package.json","t":"dashboard/seed.sql","kind":"ref"},{"s":"dashboard/package.json","t":"dashboard/server.js","kind":"ref"},{"s":"dashboard/package.json","t":"dashboard/wrangler.jsonc","kind":"ref"},{"s":"dashboard/public/index.html","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/public/index.html","t":"scripts/mission-control/build.mjs","kind":"ref"},{"s":"dashboard/public/index.html","t":".agents/customer-success/PIPELINE.md","kind":"ref"},{"s":"dashboard/public/index.html","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"dashboard/public/index.html","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/scripts/make-seed-sql.js","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/scripts/make-seed-sql.js","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/scripts/make-seed-sql.js","t":"dashboard/seed.sql","kind":"ref"},{"s":"dashboard/seed.sql","t":"REMIXES/batch-03-outlier-remixes.md","kind":"ref"},{"s":"dashboard/seed.sql","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"dashboard/seed.sql","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/seed.sql","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/seed.sql","t":"videos/5-ai-tools-slideshow/renders/5-ai-tools-slideshow_2026-07-23_11-55-03.mp4","kind":"ref"},{"s":"dashboard/seed.sql","t":"proj:5-ai-tools-slideshow","kind":"ref"},{"s":"dashboard/seed.sql","t":"proj:ai-writing-fix-slideshow","kind":"ref"},{"s":"dashboard/server.js","t":".claude/agents/xenorita.md","kind":"ref"},{"s":"dashboard/server.js","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"dashboard/server.js","t":".agents/customer-success/xenorita.png","kind":"ref"},{"s":"dashboard/server.js","t":".agents/team/bima.png","kind":"ref"},{"s":"dashboard/server.js","t":".agents/team/nala.png","kind":"ref"},{"s":"dashboard/server.js","t":".agents/team/rinjani.png","kind":"ref"},{"s":"dashboard/server.js","t":"dashboard/data/assets.json","kind":"ref"},{"s":"dashboard/server.js","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/server.js","t":"dashboard/data/remixes.json","kind":"ref"},{"s":"dashboard/server.js","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/src/worker.js","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"dashboard/src/worker.js","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"dashboard/src/worker.js","t":"dashboard/server.js","kind":"ref"},{"s":"dashboard/src/worker.js","t":"dashboard/wrangler.jsonc","kind":"ref"},{"s":"dashboard/wrangler.jsonc","t":"dashboard/src/worker.js","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":".gitignore","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"CLAUDE.md","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"LICENSE","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"README.md","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"REMIX_AUDIT_RUBRIC.md","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"IMPLEMENTATION_PLAN.md","kind":"ref"},{"s":"scripts/mission-control/build.mjs","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"scripts/outlier-pipeline/content.json","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"scripts/outlier-pipeline/dashboard-template.html","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"scripts/outlier-pipeline/normalize.mjs","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"scripts/outlier-pipeline/outlier-radar.html","kind":"ref"},{"s":"scripts/outlier-pipeline/README.md","t":"scripts/outlier-pipeline/to-studio.mjs","kind":"ref"},{"s":"scripts/outlier-pipeline/ads.config.json","t":"IMPLEMENTATION_PLAN_ADS.md","kind":"ref"},{"s":"scripts/outlier-pipeline/build.mjs","t":"scripts/outlier-pipeline/content.json","kind":"ref"},{"s":"scripts/outlier-pipeline/build.mjs","t":"scripts/outlier-pipeline/dashboard-template.html","kind":"ref"},{"s":"scripts/outlier-pipeline/build.mjs","t":"scripts/outlier-pipeline/outlier-radar.html","kind":"ref"},{"s":"scripts/outlier-pipeline/content.json","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"scripts/outlier-pipeline/content.json","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"scripts/outlier-pipeline/normalize-ads.mjs","t":"IMPLEMENTATION_PLAN_ADS.md","kind":"ref"},{"s":"scripts/outlier-pipeline/normalize-ads.mjs","t":"scripts/outlier-pipeline/ads.json","kind":"ref"},{"s":"scripts/outlier-pipeline/normalize.mjs","t":"README.md","kind":"ref"},{"s":"scripts/outlier-pipeline/normalize.mjs","t":"scripts/outlier-pipeline/README.md","kind":"ref"},{"s":"scripts/outlier-pipeline/normalize.mjs","t":"scripts/outlier-pipeline/content.json","kind":"ref"},{"s":"scripts/outlier-pipeline/outlier-radar.html","t":".agents/customer-success/playbook.md","kind":"ref"},{"s":"scripts/outlier-pipeline/outlier-radar.html","t":"dashboard/data/schedule.json","kind":"ref"},{"s":"scripts/outlier-pipeline/to-studio.mjs","t":"README.md","kind":"ref"},{"s":"scripts/outlier-pipeline/to-studio.mjs","t":"dashboard/README.md","kind":"ref"},{"s":"scripts/outlier-pipeline/to-studio.mjs","t":"dashboard/data/outliers.json","kind":"ref"},{"s":"scripts/outlier-pipeline/to-studio.mjs","t":"scripts/outlier-pipeline/ads.json","kind":"ref"},{"s":"scripts/outlier-pipeline/to-studio.mjs","t":"scripts/outlier-pipeline/content.json","kind":"ref"},{"s":"videos/5-ai-tools-slideshow/BRIEF.md","t":"dashboard/data/remixes.json","kind":"ref"},{"s":"videos/ai-escape-news-slideshow/BRIEF.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"videos/ai-escape-news-slideshow/BRIEF.md","t":"REMIXES/batch-03-outlier-remixes.md","kind":"ref"},{"s":"videos/ai-escape-news-slideshow/BRIEF.md","t":"dashboard/data/remixes.json","kind":"ref"},{"s":"videos/ai-escape-news-slideshow/BRIEF.md","t":"proj:5-ai-tools-slideshow","kind":"ref"},{"s":"videos/ai-tools-reel/BRIEF.md","t":"REMIXES/batch-02-english-market.md","kind":"ref"},{"s":"videos/ai-tools-reel/POSTING.md","t":"videos/ai-tools-reel/renders/ai-tools-reel_2026-07-23_11-27-36.mp4","kind":"ref"},{"s":"videos/ai-tools-reel/STORYBOARD.md","t":"videos/ai-tools-reel/compositions/cta.html","kind":"ref"},{"s":"videos/ai-tools-reel/STORYBOARD.md","t":"videos/ai-tools-reel/compositions/hook.html","kind":"ref"},{"s":"videos/ai-tools-reel/STORYBOARD.md","t":"videos/ai-tools-reel/compositions/tools.html","kind":"ref"},{"s":"videos/ai-tools-reel/index.html","t":"videos/ai-tools-reel/compositions/cta.html","kind":"ref"},{"s":"videos/ai-tools-reel/index.html","t":"videos/ai-tools-reel/compositions/hook.html","kind":"ref"},{"s":"videos/ai-tools-reel/index.html","t":"videos/ai-tools-reel/compositions/tools.html","kind":"ref"},{"s":"videos/ai-writing-fix-slideshow/BRIEF.md","t":".agents/product-marketing.md","kind":"ref"},{"s":"videos/ai-writing-fix-slideshow/BRIEF.md","t":"REMIXES/batch-03-outlier-remixes.md","kind":"ref"},{"s":"videos/ai-writing-fix-slideshow/BRIEF.md","t":"dashboard/data/remixes.json","kind":"ref"},{"s":"videos/ai-writing-fix-slideshow/BRIEF.md","t":"proj:5-ai-tools-slideshow","kind":"ref"}]};</script>
+  <script>
+'use strict';
+var DATA = window.__MC__;
+var canvas = document.getElementById('graph');
+var ctx = canvas.getContext('2d');
+var tip = document.getElementById('tip');
+
+var COLORS = {}, PART_NAME = {};
+DATA.parts.forEach(function (p) { COLORS[p.part_id || p.id] = p.color; PART_NAME[p.id] = p.name; });
+
+// ---- state ----
+var params = {
+  textFade: 1.1,    // zoom level where labels start appearing
+  nodeSize: 1,
+  linkThick: 1,
+  centerForce: 0.35,
+  repelForce: 1,
+  linkForce: 0.6,
+  linkDist: 70,
+};
+var filters = { q: '', media: true, refsOnly: false, parts: {} };
+DATA.parts.forEach(function (p) { filters.parts[p.id] = true; });
+
+var nodes = DATA.nodes.map(function (n) { return Object.assign({ x: 0, y: 0, vx: 0, vy: 0 }, n); });
+var byId = {};
+nodes.forEach(function (n) { byId[n.id] = n; });
+var edges = DATA.edges.map(function (e) { return { s: byId[e.s], t: byId[e.t], kind: e.kind }; });
+
+var deg = {};
+edges.forEach(function (e) { deg[e.s.id] = (deg[e.s.id] || 0) + 1; deg[e.t.id] = (deg[e.t.id] || 0) + 1; });
+var adj = {};
+edges.forEach(function (e) {
+  (adj[e.s.id] = adj[e.s.id] || []).push(e.t.id);
+  (adj[e.t.id] = adj[e.t.id] || []).push(e.s.id);
+});
+
+function radius(n) {
+  var r = n.kind === 'hub' ? 11 : n.kind === 'subhub' ? 6.5 : 2.6 + Math.min(3.4, (deg[n.id] || 1) * 0.5);
+  return r * params.nodeSize;
+}
+function mass(n) { return n.kind === 'hub' ? 14 : n.kind === 'subhub' ? 5 : 1; }
+
+// ---- visibility ----
+function nodeVisible(n) {
+  if (!filters.parts[n.part]) return false;
+  if (!filters.media && n.type === 'media') return false;
+  if (filters.refsOnly && n.kind === 'file') {
+    var hasRef = (adj[n.id] || []).length && edges.some(function (e) {
+      return e.kind === 'ref' && (e.s === n || e.t === n);
+    });
+    if (!hasRef) return false;
+  }
+  return true;
+}
+var vis = [], visEdges = [];
+function refreshVisible() {
+  vis = nodes.filter(nodeVisible);
+  var set = {};
+  vis.forEach(function (n) { set[n.id] = 1; });
+  visEdges = edges.filter(function (e) {
+    if (!set[e.s.id] || !set[e.t.id]) return false;
+    if (filters.refsOnly && e.kind !== 'ref') return false;
+    return true;
+  });
+}
+
+function matchesQuery(n) {
+  return !filters.q || n.id.toLowerCase().indexOf(filters.q) !== -1 || n.label.toLowerCase().indexOf(filters.q) !== -1;
+}
+
+// ---- layout: seed clusters, then force sim ----
+var W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+}
+resize();
+window.addEventListener('resize', function () { resize(); draw(); });
+
+(function seed() {
+  var hubs = nodes.filter(function (n) { return n.kind === 'hub'; });
+  hubs.forEach(function (h, i) {
+    var a = (i / hubs.length) * Math.PI * 2 - Math.PI / 2;
+    h.x = Math.cos(a) * 340; h.y = Math.sin(a) * 340;
+  });
+  nodes.forEach(function (n) {
+    if (n.kind === 'hub') return;
+    var hub = byId['part:' + n.part];
+    n.x = hub.x + (Math.random() - 0.5) * 260;
+    n.y = hub.y + (Math.random() - 0.5) * 260;
+  });
+})();
+
+var alpha = 0;
+function reheat(a) { alpha = Math.max(alpha, a); if (!running) loop(); }
+
+function tick() {
+  var i, j, n, m, dx, dy, d2, d, f;
+  // repulsion
+  for (i = 0; i < vis.length; i++) {
+    n = vis[i];
+    for (j = i + 1; j < vis.length; j++) {
+      m = vis[j];
+      dx = n.x - m.x; dy = n.y - m.y;
+      d2 = dx * dx + dy * dy;
+      if (d2 > 90000 || d2 === 0) continue;
+      f = params.repelForce * 260 / d2;
+      if (n.kind !== 'file' && m.kind !== 'file') f *= 30; // keep cluster hubs apart
+      if (f > 4) f = 4;
+      n.vx += dx * f / mass(n); n.vy += dy * f / mass(n);
+      m.vx -= dx * f / mass(m); m.vy -= dy * f / mass(m);
+    }
+  }
+  // springs
+  for (i = 0; i < visEdges.length; i++) {
+    var e = visEdges[i];
+    dx = e.t.x - e.s.x; dy = e.t.y - e.s.y;
+    d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var dist = params.linkDist * (e.s.kind === 'hub' || e.t.kind === 'hub' ? 1.35 : 1);
+    f = params.linkForce * 0.02 * (d - dist) / d;
+    e.s.vx += dx * f / mass(e.s); e.s.vy += dy * f / mass(e.s);
+    e.t.vx -= dx * f / mass(e.t); e.t.vy -= dy * f / mass(e.t);
+  }
+  // center gravity + integrate
+  for (i = 0; i < vis.length; i++) {
+    n = vis[i];
+    n.vx -= n.x * params.centerForce * 0.0022;
+    n.vy -= n.y * params.centerForce * 0.0022;
+    if (n === dragNode) { n.vx = 0; n.vy = 0; continue; }
+    n.vx *= 0.86; n.vy *= 0.86;
+    n.x += n.vx * alpha * 2.2;
+    n.y += n.vy * alpha * 2.2;
+  }
+  alpha *= 0.994;
+  if (alpha < 0.004) alpha = 0;
+}
+
+// ---- viewport ----
+var view = { x: 0, y: 0, k: 1 };
+function fit() {
+  var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  vis.forEach(function (n) {
+    if (n.x < minX) minX = n.x; if (n.x > maxX) maxX = n.x;
+    if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y;
+  });
+  var k = Math.min(W / (maxX - minX + 220), H / (maxY - minY + 220));
+  view.k = Math.min(1.4, k);
+  view.x = W / 2 - (minX + maxX) / 2 * view.k;
+  view.y = H / 2 - (minY + maxY) / 2 * view.k;
+}
+function toScreen(n) { return { x: n.x * view.k + view.x, y: n.y * view.k + view.y }; }
+
+// ---- draw ----
+var hoverNode = null;
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0e1116';
+  ctx.fillRect(0, 0, W, H);
+
+  var hoverSet = null;
+  if (hoverNode) {
+    hoverSet = {};
+    hoverSet[hoverNode.id] = 1;
+    (adj[hoverNode.id] || []).forEach(function (id) { hoverSet[id] = 1; });
+  }
+  var searching = !!filters.q;
+
+  // edges
+  var i, e, a, b;
+  for (i = 0; i < visEdges.length; i++) {
+    e = visEdges[i];
+    a = toScreen(e.s); b = toScreen(e.t);
+    var lit = hoverSet ? (hoverSet[e.s.id] && hoverSet[e.t.id] && (e.s === hoverNode || e.t === hoverNode)) : true;
+    var alphaE = lit ? (e.kind === 'ref' ? 0.5 : 0.28) : 0.05;
+    if (searching && !hoverSet) alphaE *= 0.45;
+    ctx.strokeStyle = e.kind === 'ref' ? 'rgba(53,194,160,' + alphaE + ')' : 'rgba(138,150,168,' + alphaE + ')';
+    ctx.lineWidth = (e.kind === 'ref' ? 1.1 : 0.7) * params.linkThick * (hoverSet && lit ? 1.6 : 1);
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  // nodes
+  var labelAlpha = Math.max(0, Math.min(1, (view.k - params.textFade) / 0.45));
+  for (i = 0; i < vis.length; i++) {
+    var n = vis[i];
+    var s = toScreen(n);
+    var r = radius(n) * Math.sqrt(view.k);
+    var dim = (hoverSet && !hoverSet[n.id]) || (searching && !matchesQuery(n));
+    ctx.globalAlpha = dim ? 0.12 : 1;
+    ctx.fillStyle = COLORS[n.part] || '#8a96a8';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    if (n === hoverNode) {
+      ctx.strokeStyle = '#e8edf4';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+    // label
+    var la = n.kind !== 'file' ? Math.max(labelAlpha, 0.85) : labelAlpha;
+    if (n === hoverNode || (hoverSet && hoverSet[n.id])) la = 1;
+    if (dim) la *= 0.15;
+    if (la > 0.02) {
+      ctx.globalAlpha = la;
+      ctx.fillStyle = '#c7d0dc';
+      ctx.font = (n.kind === 'hub' ? '700 ' : '') + (n.kind === 'hub' ? 13 : 10.5) + 'px ' +
+        (n.kind === 'file' ? 'ui-monospace, Menlo, monospace' : '-apple-system, sans-serif');
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, s.x, s.y + r + (n.kind === 'hub' ? 16 : 11));
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ---- main loop ----
+var running = false;
+function loop() {
+  running = true;
+  if (alpha > 0) tick();
+  draw();
+  if (alpha > 0) requestAnimationFrame(loop);
+  else running = false;
+}
+
+// ---- interaction ----
+var dragNode = null, panning = false, moved = 0;
+var last = { x: 0, y: 0 };
+
+function pick(mx, my) {
+  var best = null, bestD = 1e9;
+  for (var i = 0; i < vis.length; i++) {
+    var s = toScreen(vis[i]);
+    var r = Math.max(7, radius(vis[i]) * Math.sqrt(view.k) + 3);
+    var dx = mx - s.x, dy = my - s.y, d = dx * dx + dy * dy;
+    if (d < r * r && d < bestD) { best = vis[i]; bestD = d; }
+  }
+  return best;
+}
+
+function pointerPos(ev) {
+  return { x: ev.clientX, y: ev.clientY };
+}
+
+canvas.addEventListener('pointerdown', function (ev) {
+  var p = pointerPos(ev);
+  last = p; moved = 0;
+  dragNode = pick(p.x, p.y);
+  panning = !dragNode;
+  canvas.classList.add('dragging');
+  canvas.setPointerCapture(ev.pointerId);
+});
+canvas.addEventListener('pointermove', function (ev) {
+  var p = pointerPos(ev);
+  if (dragNode) {
+    dragNode.x = (p.x - view.x) / view.k;
+    dragNode.y = (p.y - view.y) / view.k;
+    moved += Math.abs(p.x - last.x) + Math.abs(p.y - last.y);
+    last = p;
+    reheat(0.25);
+    return;
+  }
+  if (panning) {
+    view.x += p.x - last.x; view.y += p.y - last.y;
+    moved += Math.abs(p.x - last.x) + Math.abs(p.y - last.y);
+    last = p;
+    draw();
+    return;
+  }
+  var n = pick(p.x, p.y);
+  if (n !== hoverNode) {
+    hoverNode = n;
+    canvas.style.cursor = n ? 'pointer' : 'grab';
+    draw();
+  }
+  if (n && n.kind === 'file') {
+    tip.style.display = 'block';
+    tip.style.left = Math.min(p.x + 14, W - 340) + 'px';
+    tip.style.top = (p.y + 14) + 'px';
+    var kb = n.size >= 1048576 ? (n.size / 1048576).toFixed(1) + ' MB' : n.size >= 1024 ? Math.round(n.size / 1024) + ' KB' : n.size + ' B';
+    var dt = new Date(n.date * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    tip.innerHTML = '<div class="p">' + n.id + '</div><div class="m">' + PART_NAME[n.part] + ' · ' + kb + ' · ' + dt + '</div>';
+  } else {
+    tip.style.display = 'none';
+  }
+});
+canvas.addEventListener('pointerup', function (ev) {
+  var wasDrag = dragNode, wasMoved = moved;
+  dragNode = null; panning = false;
+  canvas.classList.remove('dragging');
+  if (wasDrag && wasMoved < 5) {
+    if (wasDrag.kind === 'file' && wasDrag.url) window.open(wasDrag.url, '_blank', 'noopener');
+    else if (wasDrag.kind !== 'file') {
+      // soft-center on the cluster
+      view.x += W / 2 - (wasDrag.x * view.k + view.x);
+      view.y += H / 2 - (wasDrag.y * view.k + view.y);
+      draw();
+    }
+  }
+});
+canvas.addEventListener('pointerleave', function () {
+  hoverNode = null; tip.style.display = 'none'; draw();
+});
+canvas.addEventListener('wheel', function (ev) {
+  ev.preventDefault();
+  var k = view.k * Math.exp(-ev.deltaY * 0.0016);
+  k = Math.max(0.12, Math.min(6, k));
+  view.x = ev.clientX - (ev.clientX - view.x) * (k / view.k);
+  view.y = ev.clientY - (ev.clientY - view.y) * (k / view.k);
+  view.k = k;
+  draw();
+}, { passive: false });
+
+// pinch zoom
+var pinch = null;
+canvas.addEventListener('touchstart', function (ev) {
+  if (ev.touches.length === 2) {
+    pinch = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+  }
+}, { passive: true });
+canvas.addEventListener('touchmove', function (ev) {
+  if (pinch && ev.touches.length === 2) {
+    ev.preventDefault();
+    var d = Math.hypot(ev.touches[0].clientX - ev.touches[1].clientX, ev.touches[0].clientY - ev.touches[1].clientY);
+    var cx = (ev.touches[0].clientX + ev.touches[1].clientX) / 2;
+    var cy = (ev.touches[0].clientY + ev.touches[1].clientY) / 2;
+    var k = Math.max(0.12, Math.min(6, view.k * d / pinch));
+    view.x = cx - (cx - view.x) * (k / view.k);
+    view.y = cy - (cy - view.y) * (k / view.k);
+    view.k = k; pinch = d;
+    draw();
+  }
+}, { passive: false });
+canvas.addEventListener('touchend', function () { pinch = null; });
+
+// ---- panel wiring ----
+document.getElementById('panel-head').addEventListener('click', function () {
+  document.getElementById('panel').classList.toggle('collapsed');
+});
+document.getElementById('q').addEventListener('input', function (ev) {
+  filters.q = ev.target.value.trim().toLowerCase();
+  draw();
+});
+document.getElementById('t-media').addEventListener('change', function (ev) {
+  filters.media = ev.target.checked; refreshVisible(); reheat(0.3); draw();
+});
+document.getElementById('t-refs').addEventListener('change', function (ev) {
+  filters.refsOnly = ev.target.checked; refreshVisible(); reheat(0.3); draw();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.group-row'), function (row) {
+  row.addEventListener('click', function () {
+    var id = row.dataset.part;
+    filters.parts[id] = !filters.parts[id];
+    row.classList.toggle('off', !filters.parts[id]);
+    refreshVisible(); reheat(0.3); draw();
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('.slider input'), function (input) {
+  input.addEventListener('input', function () {
+    params[input.dataset.p] = Number(input.value);
+    input.closest('.slider').querySelector('output').textContent = input.value;
+    if (input.dataset.sim) reheat(0.35);
+    draw();
+  });
+});
+
+// ---- go ----
+refreshVisible();
+alpha = 1;
+for (var t = 0; t < 220; t++) tick();  // pre-settle so first paint is calm
+alpha = 0.05;
+fit();
+loop();
+</script>
+</body>
+</html>
