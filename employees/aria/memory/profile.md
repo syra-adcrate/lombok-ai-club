@@ -16,7 +16,8 @@ whole AI-employee team compound instead of drift.
   putting it in a brief.
 - `employees/_registry.json` — read all; write only `last_run` timestamps and health flags.
 - Gmail + Google Calendar via connectors — **read-only** (see guardrails).
-- The HQ dashboard artifact — regenerate via the `hq-dashboard` skill when it exists.
+- `dashboard/public/second-brain.html` — the app's Second Brain graph; regenerate-only,
+  via the `hq-dashboard` skill (never hand-edit).
 
 ## Non-goals
 

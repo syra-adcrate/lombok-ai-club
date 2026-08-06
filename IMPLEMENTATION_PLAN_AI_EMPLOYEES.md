@@ -172,6 +172,11 @@ in this repo** (`hq/`), no artifacts. The second brain stays as git-tracked file
       `hq/src/data/brief.json` + graph data regenerated at the end of every standup.
       No artifact publishing anywhere in the loop.
 
+_Also shipped in a parallel session (pre-direction-change): a no-build variant —
+`.claude/skills/hq-dashboard/generate.py` (stdlib scanner → self-contained canvas HTML)
+wired into the Content Studio as a "Second Brain" tab
+(`dashboard/public/second-brain.html`). Consolidation pending: keep one of the two._
+
 ### Phase 3 — Scale the roster (half a day each)
 - [ ] **R1** `/hire Nara "Community Manager"` + her routines; profile points at the
       marketing plugin rules.
