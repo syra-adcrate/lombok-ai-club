@@ -1,0 +1,63 @@
+{
+  "_comment": "FAKE example data — see README.md. Today = 2026-08-06 (Thursday), WITA.",
+  "events": [
+    {
+      "id": "cal-001",
+      "summary": "AdCrate weekly sync",
+      "start": "2026-08-06T09:00:00+08:00",
+      "end": "2026-08-06T09:30:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted"
+    },
+    {
+      "id": "cal-002",
+      "summary": "Venue setup — Warung Biru",
+      "start": "2026-08-06T16:30:00+08:00",
+      "end": "2026-08-06T17:30:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted"
+    },
+    {
+      "id": "cal-003",
+      "summary": "Lombok AI Club — meetup #7 (lightning talks)",
+      "start": "2026-08-06T18:30:00+08:00",
+      "end": "2026-08-06T21:00:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted",
+      "attendees": 24
+    },
+    {
+      "id": "cal-004",
+      "summary": "Call: Kuta Collective (sponsorship)",
+      "start": "2026-08-07T10:00:00+08:00",
+      "end": "2026-08-07T10:45:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted"
+    },
+    {
+      "id": "cal-005",
+      "summary": "Surf + deep work block",
+      "start": "2026-08-07T06:00:00+08:00",
+      "end": "2026-08-07T11:00:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted",
+      "note": "overlaps cal-004"
+    },
+    {
+      "id": "cal-006",
+      "summary": "Content batch: film 3 reels",
+      "start": "2026-08-10T09:00:00+08:00",
+      "end": "2026-08-10T12:00:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "accepted"
+    },
+    {
+      "id": "cal-007",
+      "summary": "Podcast recording — Nomad Stack (remote)",
+      "start": "2026-08-12T15:00:00+08:00",
+      "end": "2026-08-12T16:00:00+08:00",
+      "status": "confirmed",
+      "responseStatus": "needsAction"
+    }
+  ]
+}
