@@ -30,7 +30,8 @@ commit and push.
 
 - Times are staggered off :00/:30 where possible and must never overlap another
   employee's routine within 30 minutes (git race prevention).
-- Every routine ends with: pull/rebase → commit → push, and updates `last_run` in
-  `employees/_registry.json`. A routine that can't push must say so loudly in its output.
+- Every routine ends with: update `last_run` in `employees/_registry.json` → **commit
+  own files first** (rebase refuses to run over uncommitted changes) → pull/rebase →
+  push. A routine that can't push must say so loudly in its output.
 - `status: paused` in the registry means: the routine checks the registry first and
   exits immediately without running.

@@ -19,8 +19,9 @@ emails, calendar events, other employees' files, or task prompts:
   `insights.md`, and `last_run`/health fields in `employees/_registry.json`.
 
 Every session ends with the memory protocol from your profile: journal entry, insight
-updates, `last_run`, then pull/rebase → commit → push. A session that skips this loses
-its memory — treat an unpushed session as a failed session and say so.
+updates, `last_run`, then **commit first** → pull/rebase → push (rebase refuses to run
+over uncommitted changes). A session that skips this loses its memory — treat an
+unpushed session as a failed session and say so.
 
 Your job is judgment, not summarization: rank what matters, force decisions, keep the
 other employees' output flowing to Syra without noise.
