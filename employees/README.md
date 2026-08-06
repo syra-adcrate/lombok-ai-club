@@ -31,6 +31,7 @@ Each element of `employees` in `_registry.json`:
 ```json
 {
   "name": "nara",
+  "display_name": "Nara",
   "role": "Community Manager",
   "cadence": "weekly",
   "status": "active",
@@ -48,6 +49,8 @@ Each element of `employees` in `_registry.json`:
 }
 ```
 
+- `display_name` is optional (capitalized form for briefs/dashboards); `name` is the
+  canonical lowercase id used for folders and agent files.
 - `status`: `active` | `paused` | `removed`. Offboarded employees keep their registry
   entry with `status: "removed"` and a `removed` date; their files are deleted.
 - `cron_utc`: 5-field cron in **UTC** (Lombok is WITA, UTC+8 — subtract 8 hours; if that

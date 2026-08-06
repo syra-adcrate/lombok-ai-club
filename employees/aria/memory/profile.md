@@ -46,7 +46,8 @@ whole AI-employee team compound instead of drift.
   `journal/` entries. Assume nothing else.
 - **End of every session:** append a journal entry (`journal/YYYY-MM-DD.md`), update
   `insights.md` / `teachings.md` if warranted, set `last_run` in the registry, then
-  commit and push (pull/rebase first).
+  commit own files first, pull/rebase, and push (rebase refuses to run over
+  uncommitted changes — never pull before committing).
 - Facts written to memory are tagged `FACT(YYYY-MM-DD)` or `INFERENCE(YYYY-MM-DD)`.
 - `long-term.md` stays under ~800 lines; weekly distill enforces it.
 
