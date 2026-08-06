@@ -65,5 +65,6 @@ is a knife, not a report.
    degraded-mode status, anything learned (FACT/INFERENCE tagged).
 4. Update Aria's `last_run` in `employees/_registry.json` (ISO timestamp, UTC).
 5. If the `hq-dashboard` skill exists, regenerate the dashboard.
-6. `git pull --rebase`, commit (`Aria standup YYYY-MM-DD`), push. If push fails after
-   retries, end the brief with a loud warning that memory did not persist.
+6. Commit (`Aria standup YYYY-MM-DD`) **first**, then `git pull --rebase`, then push —
+   rebase refuses to run over uncommitted changes. If push fails after retries, end the
+   brief with a loud warning that memory did not persist.
