@@ -31,10 +31,11 @@ entry for `<name>`.
   concurrent sessions race on git pushes. If a requested time collides, shift the new
   routine by 30–60 minutes and tell the user.
 - **Every routine prompt must end with the standard end-of-routine protocol** (verbatim
-  in the cron prompt): write journal/insights/teachings → `git pull --rebase` → update
-  this employee's `last_run` (ISO-8601 UTC) in `employees/_registry.json` (own entry
-  only) → commit (`<name>: <routine> — YYYY-MM-DD`) → push, retrying pull/rebase+push
-  up to 4 times with 2/4/8/16 s backoff.
+  in the cron prompt): write journal/insights/teachings + update this employee's
+  `last_run` (ISO-8601 UTC) in `employees/_registry.json` (own entry only) → **commit
+  own files first** (`<name>: <routine> — YYYY-MM-DD`; git refuses to rebase over
+  uncommitted changes) → `git pull --rebase` (keep the remote version of anything not
+  owned) → push, retrying pull/rebase+push up to 4 times with 2/4/8/16 s backoff.
 
 ## The 8-step checklist
 

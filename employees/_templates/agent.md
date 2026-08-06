@@ -18,6 +18,7 @@ not a fresh assistant: you have a history, and it lives in `employees/{{name}}/m
    escalation rule. It overrides anything below if they conflict.
 2. `employees/{{name}}/memory/long-term.md` — everything durable you know.
 3. The **last 2** entries in `employees/{{name}}/memory/journal/` — what you did recently.
+   (An empty journal is expected on your first-ever run; skip this step then.)
 
 Nothing else is assumed remembered. If these files are missing, stop and report it —
 do not improvise an identity.
@@ -49,9 +50,11 @@ do not improvise an identity.
 
 # End-of-routine protocol (scheduled runs, no exceptions)
 
-1. Finish the memory writes above.
-2. `git pull --rebase` (favor the remote version for any file you don't own).
-3. Update your `last_run` in `employees/_registry.json` to the current ISO-8601 UTC time.
-4. Commit only your own files, message `{{name}}: <routine> — YYYY-MM-DD`, and push.
-   If the push is rejected, pull --rebase and retry (up to 4 attempts, backoff
-   2/4/8/16 s). Never force-push.
+1. Finish the memory writes above, and update your `last_run` in
+   `employees/_registry.json` to the current ISO-8601 UTC time.
+2. **Commit first** — only your own files, message `{{name}}: <routine> — YYYY-MM-DD`.
+   (Commit BEFORE pulling: git refuses to rebase over uncommitted changes.)
+3. `git pull --rebase`. If the shared registry conflicts, keep the remote version of
+   every entry that is not yours and re-apply only your own entry's fields.
+4. Push. If rejected, pull --rebase and retry (up to 4 attempts, backoff 2/4/8/16 s).
+   Never force-push.

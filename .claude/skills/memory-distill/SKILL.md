@@ -58,7 +58,8 @@ Summarize in chat: entries folded, lines in `long-term.md` before/after, journal
 deleted, anything pruned for the cap.
 
 Then the standard end-of-routine protocol: append a short entry to today's journal
-("memory-distill: <stats>"), `git pull --rebase`, update `<name>`'s `last_run`
-(ISO-8601 UTC) in `employees/_registry.json` (own entry only), commit
-(`<name>: memory-distill — YYYY-MM-DD`), and push — retrying pull/rebase + push up to
-4 times with 2/4/8/16 s backoff on rejection.
+("memory-distill: <stats>") and update `<name>`'s `last_run` (ISO-8601 UTC) in
+`employees/_registry.json` (own entry only); **commit own files first**
+(`<name>: memory-distill — YYYY-MM-DD` — commit BEFORE pulling, git refuses to rebase
+over uncommitted changes); `git pull --rebase` (keep the remote version of anything not
+owned); push — retrying pull/rebase + push up to 4 times with 2/4/8/16 s backoff.
