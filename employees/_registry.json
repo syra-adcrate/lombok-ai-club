@@ -13,6 +13,29 @@
       "status": "active",
       "created": "2026-08-06",
       "last_run": "2026-08-06T03:10:00Z"
+    },
+    {
+      "name": "testbot",
+      "role": "Scaffold Test Dummy",
+      "cadence": "weekly",
+      "status": "active",
+      "created": "2026-08-06",
+      "removed": null,
+      "routines": [
+        {
+          "name": "self-check",
+          "wita": "Mon 09:00",
+          "cron_utc": "0 1 * * 1",
+          "trigger_id": null
+        },
+        {
+          "name": "memory-distill",
+          "wita": "Sun 08:00",
+          "cron_utc": "0 0 * * 0",
+          "trigger_id": null
+        }
+      ],
+      "last_run": null
     }
   ]
 }
